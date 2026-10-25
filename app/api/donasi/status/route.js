@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
-import { callShopeeAPI, callShopeeDetailAPI } from '@/lib/shopee';
+import { callShopeeAPI, callShopeeDetailAPI, sendTelegramNotif } from '@/lib/shopee';
 
 export async function GET(req) {
   try {
@@ -68,6 +68,17 @@ export async function GET(req) {
         SET status = 'paid', paid_at = ?, issuer = ?, transaction_id = ?
         WHERE id = ?
       `).run(match.createTime, issuer, txId, id);
+
+      // Kirim Notifikasi Telegram
+      sendTelegramNotif(
+        `🎉 <b>DONASI / PEMBAYARAN MASUK!</b>\n\n` +
+        `💰 <b>Nominal:</b> Rp ${new Intl.NumberFormat('id-ID').format(donation.amount)}\n` +
+        `👤 <b>Donatur:</b> ${donation.donor_name}\n` +
+        `💬 <b>Pesan:</b> ${donation.message || '-'}\n` +
+        `🏦 <b>Metode:</b> ${issuer}\n` +
+        `🆔 <b>ID Transaksi:</b> <code>${txId}</code>\n` +
+        `⏰ <b>Waktu:</b> ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })} WIB`
+      ).catch(() => {});
 
       return NextResponse.json({
         success: true,
