@@ -1,10 +1,14 @@
 node_modules/
 .env
-shoppepay.db
-shoppepay.db-journal
+.env.local
+.next/
+out/
+donations.db*
+shoppepay.db*
 *.log
 .DS_Store
 server-*
 *.exe
 gateway*
+qris_*.png
 zakigithub.md
