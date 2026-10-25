@@ -18,6 +18,12 @@ export default function HomePage() {
 
           <nav className="flex items-center gap-4">
             <Link
+              href="/dashboard"
+              className="text-sm font-medium text-slate-300 hover:text-white transition-colors"
+            >
+              Dashboard
+            </Link>
+            <Link
               href="/donasi"
               className="text-sm font-medium text-slate-300 hover:text-white transition-colors"
             >
