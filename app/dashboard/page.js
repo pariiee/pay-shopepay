@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   ArrowLeft, RotateCw, CheckCircle2, Clock, XCircle, 
-  Wallet, TrendingUp, AlertTriangle, ShieldCheck, QrCode, Filter
+  Wallet, TrendingUp, AlertTriangle, ShieldCheck, QrCode, Filter, LogOut
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -16,6 +16,10 @@ export default function DashboardPage() {
     setLoading(true);
     try {
       const res = await fetch('/api/dashboard/stats');
+      if (res.status === 401) {
+        window.location.href = '/login';
+        return;
+      }
       const json = await res.json();
       if (json.success) {
         setData(json.data);
@@ -25,6 +29,11 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    window.location.href = '/login';
   };
 
   useEffect(() => {
@@ -77,12 +86,13 @@ export default function DashboardPage() {
               <RotateCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin text-emerald-400' : ''}`} />
               <span>Refresh</span>
             </button>
-            <Link
-              href="/donasi"
-              className="px-3 py-1.5 rounded-lg bg-emerald-500 text-slate-950 text-xs font-bold hover:bg-emerald-400 transition-colors"
+            <button
+              onClick={handleLogout}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-950/30 border border-rose-900/40 text-xs font-semibold text-rose-300 hover:bg-rose-900/50 hover:text-rose-200 transition-colors"
             >
-              Uji Transaksi
-            </Link>
+              <LogOut className="h-3.5 w-3.5" />
+              <span>Keluar</span>
+            </button>
           </div>
         </div>
       </header>

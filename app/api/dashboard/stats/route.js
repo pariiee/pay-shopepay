@@ -1,9 +1,17 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { getDb } from '@/lib/db';
 import { callShopeeAPI } from '@/lib/shopee';
+import { verifySessionToken } from '@/lib/auth';
 
 export async function GET(req) {
   try {
+    const cookieStore = await cookies();
+    const session = cookieStore.get('pay_admin_session')?.value;
+    if (!verifySessionToken(session)) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
+
     const db = getDb();
     
     // Overall Stats
