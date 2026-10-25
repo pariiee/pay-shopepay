@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { 
   Heart, ArrowLeft, QrCode, CheckCircle2, Clock, AlertCircle, 
-  RotateCw, Sparkles, MessageSquare, User, ShieldCheck, ChevronRight
+  RotateCw, Sparkles, MessageSquare, User, ShieldCheck, ChevronRight, XCircle
 } from 'lucide-react';
 
 const PRESET_AMOUNTS = [100, 1000, 5000, 10000, 25000, 50000];
@@ -151,6 +151,18 @@ export default function DonasiPage() {
     setMessage('');
   };
 
+  const handleCancel = async () => {
+    if (!paymentData) return;
+    try {
+      await fetch('/api/donasi/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: paymentData.id })
+      });
+    } catch (_) {}
+    resetForm();
+  };
+
   const formatRupiah = (val) => new Intl.NumberFormat('id-ID').format(val || 0);
 
   const formatMinutes = (sec) => {
@@ -287,10 +299,12 @@ export default function DonasiPage() {
               </div>
 
               <button
-                onClick={resetForm}
-                className="text-xs text-slate-500 hover:text-slate-400 transition-colors"
+                type="button"
+                onClick={handleCancel}
+                className="w-full py-2.5 rounded-xl bg-slate-900/90 hover:bg-rose-950/40 text-slate-400 hover:text-rose-400 border border-slate-800 hover:border-rose-900/50 text-xs font-semibold transition-all flex items-center justify-center gap-1.5"
               >
-                Batalkan & Ganti Nominal
+                <XCircle className="h-4 w-4" />
+                <span>Batalkan Pembayaran & Ganti Nominal</span>
               </button>
             </div>
           ) : (
