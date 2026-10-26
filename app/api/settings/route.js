@@ -16,7 +16,8 @@ export async function GET() {
       store_name: getSetting('store_name', 'Ngecode Aje'),
       unique_code_enabled: getSetting('unique_code_enabled', '1') === '1',
       unique_code_max: parseInt(getSetting('unique_code_max', '99'), 10),
-      api_key: getSetting('api_key', process.env.API_KEY || 'ngecodeaje-secret-2026')
+      api_key: getSetting('api_key', process.env.API_KEY || 'al-yra7890ia8'),
+      webhook_url: getSetting('webhook_url', '')
     }
   });
 }
@@ -34,6 +35,7 @@ export async function POST(req) {
     if (body.unique_code_enabled !== undefined) setSetting('unique_code_enabled', body.unique_code_enabled ? '1' : '0');
     if (body.unique_code_max !== undefined) setSetting('unique_code_max', String(body.unique_code_max));
     if (body.api_key !== undefined && body.api_key.trim()) setSetting('api_key', body.api_key.trim());
+    if (body.webhook_url !== undefined) setSetting('webhook_url', body.webhook_url.trim());
 
     return NextResponse.json({ success: true, message: 'Pengaturan berhasil disimpan' });
   } catch (err) {

@@ -14,6 +14,7 @@ export default function SettingsPage() {
   const [uniqueEnabled, setUniqueEnabled] = useState(true);
   const [uniqueMax, setUniqueMax] = useState(99);
   const [apiKey, setApiKey] = useState('');
+  const [webhookUrl, setWebhookUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
@@ -33,6 +34,7 @@ export default function SettingsPage() {
         setUniqueEnabled(json.data.unique_code_enabled);
         setUniqueMax(json.data.unique_code_max);
         setApiKey(json.data.api_key);
+        setWebhookUrl(json.data.webhook_url || '');
       }
     } catch (err) {
       setError(err.message);
@@ -59,7 +61,8 @@ export default function SettingsPage() {
           store_name: storeName,
           unique_code_enabled: uniqueEnabled,
           unique_code_max: uniqueMax,
-          api_key: apiKey
+          api_key: apiKey,
+          webhook_url: webhookUrl
         })
       });
 
@@ -177,6 +180,22 @@ export default function SettingsPage() {
                     <span className="text-[11px] text-slate-400 ml-2">Maksimal penambahan kode unik (default: 99).</span>
                   </div>
                 )}
+              </div>
+
+              {/* Webhook URL */}
+              <div className="space-y-1.5 pt-3 border-t border-slate-100">
+                <label className="block text-xs font-bold text-slate-900 flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4 text-slate-500" />
+                  <span>Webhook URL (Callback Otomatis)</span>
+                </label>
+                <input
+                  type="url"
+                  placeholder="https://domain-kamu.com/api/payment/webhook"
+                  value={webhookUrl}
+                  onChange={(e) => setWebhookUrl(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-mono focus:outline-none focus:border-slate-900 transition"
+                />
+                <p className="text-[11px] text-slate-400">Endpoint yang otomatis ditembak saat pembayaran lunas atau expired.</p>
               </div>
 
               {/* API Key */}

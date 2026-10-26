@@ -5,7 +5,7 @@ import Link from 'next/link';
 import {
   ArrowLeft, RotateCw, CheckCircle2, Clock, XCircle, Wallet,
   AlertTriangle, ShieldCheck, QrCode, LogOut, Copy, Check, TrendingUp,
-  LayoutDashboard, Receipt, PlusCircle, Link2, KeyRound, Settings, BookOpen
+  LayoutDashboard, Receipt, PlusCircle, Link2, KeyRound, Settings, BookOpen, History
 } from 'lucide-react';
 
 const DAY = 86400;
@@ -21,6 +21,16 @@ const fmtTime = (ts) =>
         timeZone: 'Asia/Jakarta', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
       })
     : '-';
+
+const formatWebhookDate = (ts) => {
+  if (!ts) return '-';
+  const d = new Date(ts * 1000);
+  const day = d.getDate();
+  const m = BULAN[d.getMonth()];
+  const h = String(d.getHours()).padStart(2, '0');
+  const min = String(d.getMinutes()).padStart(2, '0');
+  return `${day} ${m}, ${h}.${min}`;
+};
 
 const card = 'rounded-[28px] bg-white p-4 sm:p-6';
 
@@ -135,6 +145,22 @@ export default function DashboardPage() {
   const [filter, setFilter] = useState('all');
   const [copied, setCopied] = useState(null);
   const [tab, setTab] = useState('dashboard');
+  const [webhookLogs, setWebhookLogs] = useState([]);
+  const [webhookLoading, setWebhookLoading] = useState(false);
+
+  const fetchWebhookLogs = async () => {
+    setWebhookLoading(true);
+    try {
+      const res = await fetch('/api/webhook/logs');
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success) setWebhookLogs(json.data.logs || []);
+      }
+    } catch (_) {}
+    finally {
+      setWebhookLoading(false);
+    }
+  };
 
   useEffect(() => {
     const el = document.getElementById('riwayat');
@@ -181,7 +207,11 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchStats();
-    const interval = setInterval(fetchStats, 30000);
+    fetchWebhookLogs();
+    const interval = setInterval(() => {
+      fetchStats();
+      fetchWebhookLogs();
+    }, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -525,6 +555,78 @@ export default function DashboardPage() {
                 )}
               </tbody>
             </table>
+          </div>
+        </section>
+
+        {/* Webhook logs panel matching Image 1 */}
+        <section id="webhook-logs" className="overflow-hidden rounded-[28px] bg-white">
+          <div className="flex flex-wrap items-center justify-between gap-3 p-5 sm:p-6 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-700">
+                <History className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="font-semibold text-slate-900">Webhook logs</h2>
+                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">
+                    30 days
+                  </span>
+                </div>
+                <p className="mt-0.5 text-xs text-slate-500">Riwayat pengiriman webhook 30 days terakhir.</p>
+              </div>
+            </div>
+
+            <button
+              onClick={fetchWebhookLogs}
+              disabled={webhookLoading}
+              className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 hover:bg-slate-200 px-3.5 py-1.5 text-xs font-semibold text-slate-700 transition disabled:opacity-50"
+            >
+              <RotateCw className={`h-3.5 w-3.5 ${webhookLoading ? 'animate-spin' : ''}`} />
+              <span>Refresh</span>
+            </button>
+          </div>
+
+          <div className="p-4 sm:p-6">
+            {webhookLogs.length === 0 ? (
+              <p className="text-center text-xs text-slate-400 py-8">
+                Belum ada pengiriman webhook yang tercatat. (Atur Webhook URL di menu Settings)
+              </p>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {webhookLogs.map((log) => {
+                  const isSuccess = log.response_code >= 200 && log.response_code < 300;
+                  return (
+                    <div key={log.id} className="py-3.5 flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 text-xs">
+                      <div className="flex items-start gap-3 min-w-0 flex-1">
+                        <span className={`h-2.5 w-2.5 rounded-sm mt-1 shrink-0 ${isSuccess ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-semibold text-slate-900">{log.event}</span>
+                            {!isSuccess && (
+                              <span className="font-bold text-rose-600 text-[11px]">
+                                HTTP {log.response_code}
+                              </span>
+                            )}
+                          </div>
+                          <p className="font-mono text-[11px] text-slate-500 truncate mt-0.5 max-w-md sm:max-w-xl">
+                            {log.url}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-4 text-[11px] text-slate-500 shrink-0 font-mono">
+                        {isSuccess && (
+                          <span className="text-slate-600 font-sans font-medium">HTTP {log.response_code}</span>
+                        )}
+                        <span>{log.attempts || 1}×</span>
+                        <span>{log.latency_ms} ms</span>
+                        <span className="font-sans text-slate-400">{formatWebhookDate(log.created_at)}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </section>
       </main>

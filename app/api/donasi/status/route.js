@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { callShopeeAPI, callShopeeDetailAPI, sendTelegramNotif } from '@/lib/shopee';
+import { dispatchWebhook } from '@/lib/webhook';
 
 export async function GET(req) {
   try {
@@ -79,6 +80,19 @@ export async function GET(req) {
         `🆔 <b>ID Transaksi:</b> <code>${txId}</code>\n` +
         `⏰ <b>Waktu:</b> ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })} WIB`
       ).catch(() => {});
+
+      // Dispatch Webhook Event payment.paid
+      dispatchWebhook('payment.paid', {
+        id: donation.id,
+        amount: donation.amount,
+        base_amount: donation.base_amount,
+        unique_code: donation.unique_code,
+        customer_name: donation.donor_name,
+        message: donation.message,
+        issuer: issuer,
+        transaction_id: txId,
+        paid_at: match.createTime
+      }).catch(() => {});
 
       return NextResponse.json({
         success: true,
