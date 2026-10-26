@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getDb, getSetting } from '@/lib/db';
-import QRCode from 'qrcode';
+import { generateStyledQrSvg } from '@/lib/qr-generator';
 
 export async function GET(req, { params }) {
   try {
@@ -12,11 +12,9 @@ export async function GET(req, { params }) {
       return NextResponse.json({ success: false, error: 'Tagihan tidak ditemukan' }, { status: 404 });
     }
 
-    const qrImage = await QRCode.toDataURL(row.qris_string, {
-      width: 380,
-      margin: 2,
-      color: { dark: '#0f172a', light: '#ffffff' }
-    });
+    const qrStyle = getSetting('qr_style', 'classic');
+    const qrColor = getSetting('qr_color', '#0f172a');
+    const qrImage = generateStyledQrSvg(row.qris_string, { style: qrStyle, color: qrColor, size: 380 });
 
     const now = Math.floor(Date.now() / 1000);
     const expiresAt = row.expires_at || (row.created_at + 300); // 5 mins fallback

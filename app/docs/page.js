@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   ArrowLeft, BookOpen, KeyRound, Check, Copy, 
@@ -16,9 +16,18 @@ export default function DocsPage() {
   const [testAmount, setTestAmount] = useState('25000');
   const [testFee, setTestFee] = useState('1000');
   const [testCustomer, setTestCustomer] = useState('Pak Tester');
-  const [testApiKey, setTestApiKey] = useState('al-yra7890ia8');
+  const [testApiKey, setTestApiKey] = useState('al-ez7dpzxdh6');
   const [testLoading, setTestLoading] = useState(false);
   const [testResult, setTestResult] = useState(null);
+
+  useEffect(() => {
+    fetch('/api/settings/active-key')
+      .then(res => res.json())
+      .then(data => {
+        if (data?.success && data.api_key) setTestApiKey(data.api_key);
+      })
+      .catch(() => {});
+  }, []);
 
   const copyCode = async (id, code) => {
     try {

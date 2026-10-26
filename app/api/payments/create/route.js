@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import QRCode from 'qrcode';
 import { getDb, getSetting } from '@/lib/db';
 import { generateDynamicQRIS } from '@/lib/shopee';
+import { generateStyledQrSvg } from '@/lib/qr-generator';
 
 export async function POST(req) {
   try {
@@ -62,11 +63,9 @@ export async function POST(req) {
     }
 
     const dynamicQR = generateDynamicQRIS(staticQR, finalAmount);
-    const qrImage = await QRCode.toDataURL(dynamicQR, {
-      width: 380,
-      margin: 2,
-      color: { dark: '#0f172a', light: '#ffffff' }
-    });
+    const qrStyle = getSetting('qr_style', 'classic');
+    const qrColor = getSetting('qr_color', '#0f172a');
+    const qrImage = generateStyledQrSvg(dynamicQR, { style: qrStyle, color: qrColor, size: 380 });
 
     const paymentId = crypto.randomBytes(4).toString('hex');
 

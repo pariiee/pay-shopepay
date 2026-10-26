@@ -1,38 +1,15 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import {
-  ArrowLeft, RotateCw, CheckCircle2, Clock, XCircle, Wallet,
-  AlertTriangle, ShieldCheck, QrCode, LogOut, Copy, Check, TrendingUp,
-  LayoutDashboard, Receipt, PlusCircle, Link2, KeyRound, Settings, BookOpen, History
+import { 
+  CheckCircle2, Clock, XCircle, RotateCw, 
+  Copy, Check, ArrowUpRight, TrendingUp,
+  Receipt, Eye, X, ExternalLink, ShieldCheck,
+  KeyRound, Settings, BookOpen
 } from 'lucide-react';
 
-const DAY = 86400;
-const WIB = 7 * 3600; // offset WIB (detik)
-const BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 const LIME = '#d8f53b';
-
-const dayKey = (ts) => Math.floor((ts + WIB) / DAY);
-const rupiah = (v) => new Intl.NumberFormat('id-ID').format(v || 0);
-const fmtTime = (ts) =>
-  ts
-    ? new Date(ts * 1000).toLocaleString('id-ID', {
-        timeZone: 'Asia/Jakarta', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
-      })
-    : '-';
-
-const formatWebhookDate = (ts) => {
-  if (!ts) return '-';
-  const d = new Date(ts * 1000);
-  const day = d.getDate();
-  const m = BULAN[d.getMonth()];
-  const h = String(d.getHours()).padStart(2, '0');
-  const min = String(d.getMinutes()).padStart(2, '0');
-  return `${day} ${m}, ${h}.${min}`;
-};
-
-const card = 'rounded-[28px] bg-white p-4 sm:p-6';
 
 function StatusPill({ status }) {
   if (status === 'paid')
@@ -60,135 +37,47 @@ function StatusPill({ status }) {
   );
 }
 
-function RoundBtn({ children, ...props }) {
-  return (
-    <button
-      {...props}
-      className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-700 transition hover:bg-slate-900 hover:text-white disabled:opacity-50"
-    >
-      {children}
-    </button>
-  );
-}
-
-function TabItem({ active, onClick, Icon, label, spin }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`flex min-w-[66px] flex-col items-center gap-0.5 rounded-full px-3 py-2 text-[10px] font-semibold transition ${
-        active ? 'bg-slate-900 text-white' : 'text-slate-500'
-      }`}
-    >
-      <Icon className={`h-5 w-5 ${spin ? 'animate-spin' : ''}`} style={active ? { color: LIME } : undefined} />
-      {label}
-    </button>
-  );
-}
-
-function Chart({ series }) {
-  const [hover, setHover] = useState(null);
-  const W = 600, H = 190, PX = 16, PT = 34, PB = 26;
-  const max = Math.max(1, ...series.map((d) => d.total));
-  const step = (W - PX * 2) / (series.length - 1);
-  const y = (v) => PT + (H - PT - PB) * (1 - v / max);
-  const pts = series.map((d, i) => ({ x: PX + i * step, y: y(d.total), yp: y(d.paid) }));
-  const curve = (key) =>
-    pts
-      .map((p, i) => {
-        if (i === 0) return `M${p.x},${p[key]}`;
-        const q = pts[i - 1];
-        const mx = (q.x + p.x) / 2;
-        return `C${mx},${q[key]} ${mx},${p[key]} ${p.x},${p[key]}`;
-      })
-      .join(' ');
-  const line = curve('y');
-  const area = `${line} L${pts[pts.length - 1].x},${H - PB} L${pts[0].x},${H - PB} Z`;
-  const h = hover !== null ? pts[hover] : null;
-
-  return (
-    <div>
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label="Grafik transaksi 14 hari terakhir">
-      <defs>
-        <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={LIME} stopOpacity="0.9" />
-          <stop offset="100%" stopColor={LIME} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      {[0, 0.5, 1].map((t) => (
-        <line key={t} x1={PX} x2={W - PX} y1={PT + (H - PT - PB) * t} y2={PT + (H - PT - PB) * t} stroke="#e2e8f0" strokeDasharray="3 5" />
-      ))}
-      <path d={area} fill="url(#areaFill)" />
-      <path d={curve('yp')} fill="none" stroke="#0f172a" strokeOpacity="0.45" strokeWidth="1.5" strokeDasharray="4 5" />
-      <path d={line} fill="none" stroke="#0f172a" strokeWidth="2.5" strokeLinecap="round" />
-      {h && <line x1={h.x} x2={h.x} y1={PT - 6} y2={H - PB} stroke="#0f172a" strokeWidth="1" />}
-      {pts.map((p, i) => (
-        <g key={i} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} onFocus={() => setHover(i)} onBlur={() => setHover(null)} onClick={() => setHover(i)} tabIndex={0}>
-          <circle cx={p.x} cy={H / 2} r={step / 2} fill="transparent" />
-          <rect x={p.x - step / 2} y={0} width={step} height={H} fill="transparent" />
-          {hover === i && <circle cx={p.x} cy={p.y} r="6" fill="#fff" stroke="#0f172a" strokeWidth="2.5" />}
-        </g>
-      ))}
-      {[0, 6, 13].map((i) => (
-        <text key={i} x={pts[i].x} y={H - 6} fontSize="15" fill="#64748b" textAnchor={i === 0 ? 'start' : i === 13 ? 'end' : 'middle'}>
-          {series[i].label}
-        </text>
-      ))}
-    </svg>
-    <div className="mt-2 flex justify-center">
-      <span className="rounded-full bg-slate-900 px-3.5 py-1.5 text-xs font-semibold" style={{ color: LIME }}>
-        {hover !== null
-          ? `${series[hover].label}: ${series[hover].total} trx, ${series[hover].paid} lunas`
-          : 'Sentuh titik grafik untuk lihat detail'}
-      </span>
-    </div>
-    </div>
-  );
-}
-
 export default function DashboardPage() {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all');
-  const [copied, setCopied] = useState(null);
-  const [tab, setTab] = useState('dashboard');
+  const [stats, setStats] = useState({
+    total_tx: 0,
+    total_paid: 0,
+    total_pending: 0,
+    total_expired: 0,
+    total_cancelled: 0,
+    total_volume: 0,
+    total_unique_fees: 0
+  });
+  const [transactions, setTransactions] = useState([]);
   const [webhookLogs, setWebhookLogs] = useState([]);
-  const [webhookLoading, setWebhookLoading] = useState(false);
-
-  const fetchWebhookLogs = async () => {
-    setWebhookLoading(true);
-    try {
-      const res = await fetch('/api/webhook/logs');
-      if (res.ok) {
-        const json = await res.json();
-        if (json.success) setWebhookLogs(json.data.logs || []);
-      }
-    } catch (_) {}
-    finally {
-      setWebhookLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    const el = document.getElementById('riwayat');
-    if (!el) return;
-    const io = new IntersectionObserver(
-      ([e]) => setTab(e.isIntersecting ? 'riwayat' : 'dashboard'),
-      { threshold: 0.25 }
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
+  const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(null);
+  const [filter, setFilter] = useState('all');
+  const [selectedTx, setSelectedTx] = useState(null);
+  const [selectedLog, setSelectedLog] = useState(null);
 
   const fetchStats = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/dashboard/stats');
-      if (res.status === 401) {
+      const [resStats, resLogs] = await Promise.all([
+        fetch('/api/dashboard/stats'),
+        fetch('/api/webhook/logs')
+      ]);
+
+      if (resStats.status === 401) {
         window.location.href = '/login';
         return;
       }
-      const json = await res.json();
-      if (json.success) setData(json.data);
+
+      const jsonStats = await resStats.json();
+      if (jsonStats.success) {
+        setStats(jsonStats.data.stats || {});
+        setTransactions(jsonStats.data.transactions || []);
+      }
+
+      const jsonLogs = await resLogs.json();
+      if (jsonLogs.success) {
+        setWebhookLogs(jsonLogs.data.logs || []);
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -196,277 +85,142 @@ export default function DashboardPage() {
     }
   };
 
-  const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
-    window.location.href = '/login';
-  };
-
-  const copyId = async (id) => {
-    try {
-      await navigator.clipboard.writeText(id);
-      setCopied(id);
-      setTimeout(() => setCopied(null), 1500);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
   useEffect(() => {
     fetchStats();
-    fetchWebhookLogs();
-    const interval = setInterval(() => {
-      fetchStats();
-      fetchWebhookLogs();
-    }, 30000);
-    return () => clearInterval(interval);
   }, []);
 
-  const txs = data?.transactions || [];
-  const stats = data?.stats || {};
+  const copyText = async (text, id) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(id);
+      setTimeout(() => setCopied(null), 1500);
+    } catch (_) {}
+  };
 
-  // Seri 14 hari dihitung dari daftar transaksi (zona waktu WIB)
-  const { series, todayRev, todayPaid, rev14 } = useMemo(() => {
-    const today = dayKey(Date.now() / 1000);
-    const map = {};
-    for (let i = 13; i >= 0; i--) {
-      const k = today - i;
-      const d = new Date(k * DAY * 1000);
-      map[k] = { label: `${d.getUTCDate()} ${BULAN[d.getUTCMonth()]}`, total: 0, paid: 0, rev: 0 };
-    }
-    txs.forEach((t) => {
-      const b = map[dayKey(t.created_at)];
-      if (!b) return;
-      b.total += 1;
-      if (t.status === 'paid') {
-        b.paid += 1;
-        b.rev += t.amount || 0;
-      }
+  const rupiah = (n) => new Intl.NumberFormat('id-ID').format(n || 0);
+
+  const fmtTime = (ts) => {
+    if (!ts) return '-';
+    return new Date(ts * 1000).toLocaleString('id-ID', {
+      timeZone: 'Asia/Jakarta',
+      day: '2-digit',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit'
     });
-    const list = Object.values(map);
-    return {
-      series: list,
-      todayRev: list[13].rev,
-      todayPaid: list[13].paid,
-      rev14: list.reduce((s, d) => s + d.rev, 0),
-    };
-  }, [txs]);
+  };
 
-  const paid = stats.total_paid || 0;
-  const pending = stats.total_pending || 0;
-  const cancelled = stats.total_cancelled || 0;
-  const totalTrx = paid + pending + cancelled;
-  const rate = totalTrx ? Math.round((paid / totalTrx) * 100) : 0;
+  const filtered = transactions.filter((t) => {
+    if (filter === 'all') return true;
+    return t.status === filter;
+  });
 
-  const filtered = txs.filter((t) => filter === 'all' || t.status === filter);
-  const recent = txs.slice(0, 5);
-  const tokenOk = data?.token_status === 'valid';
+  // Strict 10 transaksi terakhir
+  const recentTenTx = filtered.slice(0, 10);
+  // Strict 15 log webhook terakhir
+  const recentFifteenLogs = webhookLogs.slice(0, 15);
+
+  const statCard = "rounded-[28px] bg-white p-5 sm:p-6 shadow-xl shadow-slate-900/5";
 
   return (
-    <div className="min-h-screen bg-[#e9edf2] text-slate-900">
-      {/* Header */}
-      <header className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-5 sm:px-6">
+    <div className="min-h-screen bg-[#e9edf2] text-slate-900 flex flex-col justify-between">
+      {/* Top Navbar */}
+      <header className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-5 sm:px-6">
         <div className="flex items-center gap-3">
-          <Link href="/" aria-label="Kembali" className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-600 transition hover:bg-slate-900 hover:text-white">
-            <ArrowLeft className="h-4 w-4" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 font-bold" style={{ color: LIME }}>
+            SP
+          </div>
+          <div>
+            <span className="text-sm font-bold tracking-tight text-slate-900 block leading-tight">SisforHub Pay</span>
+            <span className="text-[11px] font-medium text-slate-500">Merchant Gateway Dashboard</span>
+          </div>
+        </div>
+
+        <nav className="flex items-center gap-1.5 sm:gap-2 text-xs font-semibold">
+          <Link href="/riwayat" className="rounded-full px-3.5 py-1.5 text-slate-700 bg-white shadow-sm hover:bg-slate-900 hover:text-white transition">
+            Riwayat
           </Link>
-          <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900" style={{ color: LIME }}>
-              <QrCode className="h-4 w-4" />
-            </div>
-            <span className="text-lg font-bold tracking-tight">SisforHub Pay</span>
-          </div>
-        </div>
-
-        <nav className="hidden items-center gap-1 rounded-full bg-white p-1 text-xs font-semibold md:flex">
-          <Link href="/dashboard" className="rounded-full bg-slate-900 px-3.5 py-1.5 text-white">Dashboard</Link>
-          <Link href="/donasi" target="_blank" className="rounded-full px-3 py-1.5 text-slate-600 transition hover:text-slate-900">Link Statis</Link>
-          <Link href="/transactions" className="rounded-full px-3 py-1.5 text-slate-600 transition hover:text-slate-900">Transaksi</Link>
-          <Link href="/api-keys" className="rounded-full px-3 py-1.5 text-slate-600 transition hover:text-slate-900">API Key</Link>
-          <Link href="/settings" className="rounded-full px-3 py-1.5 text-slate-600 transition hover:text-slate-900">Settings</Link>
-          <Link href="/docs" className="rounded-full px-3 py-1.5 text-slate-600 transition hover:text-slate-900">Docs</Link>
+          <Link href="/api-keys" className="rounded-full px-3.5 py-1.5 text-slate-700 bg-white shadow-sm hover:bg-slate-900 hover:text-white transition">
+            API Key
+          </Link>
+          <Link href="/settings" className="rounded-full px-3.5 py-1.5 text-slate-700 bg-white shadow-sm hover:bg-slate-900 hover:text-white transition">
+            Settings
+          </Link>
+          <Link href="/docs" className="rounded-full px-3.5 py-1.5 text-slate-700 bg-white shadow-sm hover:bg-slate-900 hover:text-white transition">
+            Docs
+          </Link>
+          <button
+            onClick={fetchStats}
+            disabled={loading}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-slate-700 shadow-sm transition hover:bg-slate-900 hover:text-white disabled:opacity-50"
+            title="Refresh Data"
+          >
+            <RotateCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+          </button>
         </nav>
-
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 rounded-full bg-white p-2.5 text-xs sm:py-2 sm:pl-3 sm:pr-4">
-            {tokenOk ? <ShieldCheck className="h-4 w-4 text-emerald-600" /> : <AlertTriangle className="h-4 w-4 text-rose-500" />}
-            <span className="hidden font-semibold sm:inline">Ngecode Aje</span>
-            <span className={`hidden sm:inline ${tokenOk ? 'text-emerald-600' : 'text-rose-500'}`}>{tokenOk ? 'Token valid' : 'Token perlu update'}</span>
-          </div>
-          <div className="hidden items-center gap-2 md:flex">
-            <RoundBtn onClick={fetchStats} disabled={loading} aria-label="Refresh">
-              <RotateCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            </RoundBtn>
-            <RoundBtn onClick={handleLogout} aria-label="Keluar">
-              <LogOut className="h-4 w-4" />
-            </RoundBtn>
-          </div>
-        </div>
       </header>
 
-      <main className="mx-auto max-w-7xl space-y-4 px-4 pb-10 sm:px-6">
-        <div className="px-1 pb-1">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Overview</h1>
-          <p className="mt-1 text-sm text-slate-500">Pantau performa pembayaran QRIS kamu.</p>
-        </div>
-
-        {/* Quick Actions Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <Link href="/donasi" target="_blank" className={`${card} group hover:border-slate-300 border border-transparent transition`}>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold text-slate-900">Link Statis (/donasi)</span>
-              <div className="h-8 w-8 rounded-full bg-slate-900 text-white flex items-center justify-center group-hover:scale-105 transition" style={{ color: LIME }}>
-                <Link2 className="h-4 w-4" />
-              </div>
-            </div>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Link permanen publik — masukkan nominal otomatis jadi invoice /payin/:id.
-            </p>
-          </Link>
-
-          <Link href="/transactions" className={`${card} group hover:border-slate-300 border border-transparent transition`}>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold text-slate-900">Transactions</span>
-              <div className="h-8 w-8 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center group-hover:scale-105 transition">
-                <Receipt className="h-4 w-4" />
-              </div>
-            </div>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Riwayat transaksi mutasi QRIS lengkap dengan filter.
-            </p>
-          </Link>
-
-          <Link href="/api-keys" className={`${card} group hover:border-slate-300 border border-transparent transition`}>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold text-slate-900">API Key</span>
-              <div className="h-8 w-8 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center group-hover:scale-105 transition">
-                <KeyRound className="h-4 w-4" />
-              </div>
-            </div>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              This key is sent in the X-API-Key on every request.
-            </p>
-          </Link>
-
-          <Link href="/docs" className={`${card} group hover:border-slate-300 border border-transparent transition`}>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold text-slate-900">Docs & Settings</span>
-              <div className="h-8 w-8 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center group-hover:scale-105 transition">
-                <BookOpen className="h-4 w-4" />
-              </div>
-            </div>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Dokumentasi integrasi cURL, Node.js, PHP & atur toko.
-            </p>
-          </Link>
-        </div>
-
-        {/* Ringkasan */}
+      {/* Main Content */}
+      <main className="mx-auto w-full max-w-6xl space-y-6 px-4 pb-12 sm:px-6 flex-1">
+        {/* Ringkasan Statistik */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-          {/* Total revenue: kartu hitam */}
-          <div className="rounded-[28px] bg-slate-900 p-4 text-white sm:p-6">
-            <div className="flex items-center justify-between text-sm text-slate-400">
-              <span>Total uang masuk</span>
-              <Wallet className="h-4 w-4" style={{ color: LIME }} />
+          <div className={statCard}>
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Volume</span>
+            <div className="mt-2 text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900">
+              Rp {rupiah(stats.total_volume)}
             </div>
-            <p className="mt-4 text-xl font-bold tracking-tight sm:text-3xl">Rp {rupiah(stats.total_volume)}</p>
-            <p className="mt-1 text-xs text-slate-400">Dari {paid} transaksi lunas</p>
-
-            <div className="mt-6 text-xs text-slate-400">Tingkat sukses {rate}%</div>
-            <div
-              className="mt-2 h-3 overflow-hidden rounded-full"
-              style={{ background: 'repeating-linear-gradient(135deg,#475569 0 3px,transparent 3px 7px)' }}
-            >
-              <div className="h-full rounded-full" style={{ width: `${rate}%`, background: LIME }} />
-            </div>
+            <p className="mt-1 text-xs text-slate-500">Uang masuk berhasil diproses.</p>
           </div>
 
-          {/* Hari ini: kartu lime */}
-          <div className="rounded-[28px] p-4 sm:p-6" style={{ background: LIME }}>
-            <div className="flex items-center justify-between text-sm text-slate-800/70">
-              <span>Pemasukan hari ini</span>
-              <TrendingUp className="h-4 w-4 text-slate-900" />
+          <div className={statCard}>
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Transaksi Sukses</span>
+            <div className="mt-2 text-xl sm:text-2xl font-extrabold tracking-tight text-emerald-600 flex items-center gap-1.5">
+              <span>{stats.total_paid || 0}</span>
+              <span className="text-xs font-semibold text-slate-400">/ {stats.total_tx || 0} tx</span>
             </div>
-            <p className="mt-4 text-xl font-bold tracking-tight sm:text-3xl">Rp {rupiah(todayRev)}</p>
-            <p className="mt-1 text-xs text-slate-800/70">{todayPaid} transaksi lunas hari ini</p>
+            <p className="mt-1 text-xs text-slate-500">Tagihan lunas terverifikasi.</p>
           </div>
 
-          <div className={card}>
-            <div className="flex items-center justify-between text-sm text-slate-500">
-              <span>Menunggu bayar</span>
-              <Clock className="h-4 w-4 text-amber-500" />
+          <div className={statCard}>
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Pending</span>
+            <div className="mt-2 text-xl sm:text-2xl font-extrabold tracking-tight text-amber-600">
+              {stats.total_pending || 0}
             </div>
-            <p className="mt-4 text-xl font-bold tracking-tight sm:text-3xl">{pending}</p>
-            <p className="mt-1 text-xs text-slate-500">Aktif dalam 15 menit</p>
+            <p className="mt-1 text-xs text-slate-500">Menunggu pembayaran pembeli.</p>
           </div>
 
-          <div className={card}>
-            <div className="flex items-center justify-between text-sm text-slate-500">
-              <span>Batal atau kedaluwarsa</span>
-              <XCircle className="h-4 w-4 text-rose-500" />
+          <div className={statCard}>
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Expired / Batal</span>
+            <div className="mt-2 text-xl sm:text-2xl font-extrabold tracking-tight text-slate-500 flex items-center gap-2">
+              <span>{stats.total_expired || 0}</span>
+              <span className="text-xs text-rose-500 font-bold">({stats.total_cancelled || 0} batal)</span>
             </div>
-            <p className="mt-4 text-xl font-bold tracking-tight sm:text-3xl">{cancelled}</p>
-            <p className="mt-1 text-xs text-slate-500">Dibatalkan user atau timeout</p>
+            <p className="mt-1 text-xs text-slate-500">Kadaluarsa atau dibatalkan.</p>
           </div>
         </div>
 
-        {/* Grafik + transaksi terbaru */}
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-          <section className={`${card} lg:col-span-7`}>
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h2 className="font-semibold">14 hari terakhir</h2>
-                <p className="mt-0.5 text-xs text-slate-500">Garis tebal: semua transaksi. Garis putus-putus: yang lunas.</p>
-              </div>
-              <span className="rounded-full bg-slate-900 px-3 py-1.5 text-sm font-bold" style={{ color: LIME }}>
-                Rp {rupiah(rev14)}
-              </span>
-            </div>
-            <div className="mt-4">
-              <Chart series={series} />
-            </div>
-          </section>
-
-          <section className={`${card} lg:col-span-5`}>
-            <div className="flex items-center justify-between">
-              <h2 className="font-semibold">Transaksi terbaru</h2>
-              <a href="#riwayat" className="text-xs font-semibold text-slate-500 underline underline-offset-4 hover:text-slate-900">Lihat semua</a>
-            </div>
-            <ul className="mt-3 divide-y divide-slate-100">
-              {recent.length === 0 && <li className="py-8 text-center text-sm text-slate-400">Belum ada transaksi.</li>}
-              {recent.map((t) => (
-                <li key={t.id} className="flex items-center gap-3 py-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-900 text-sm font-bold" style={{ color: LIME }}>
-                    {(t.donor_name || '?').charAt(0).toUpperCase()}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold">{t.donor_name}</p>
-                    <p className="text-xs text-slate-500">{t.issuer || 'Belum dibayar'}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className={`text-sm font-bold ${t.status === 'paid' ? 'text-emerald-600' : 'text-slate-400 line-through'}`}>
-                      {t.status === 'paid' ? '+' : ''}Rp {rupiah(t.amount)}
-                    </p>
-                    <p className="text-[11px] text-slate-400">{fmtTime(t.created_at)}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </section>
-        </div>
-
-        {/* Riwayat lengkap */}
-        <section id="riwayat" className="overflow-hidden rounded-[28px] bg-white">
-          <div className="flex flex-wrap items-center justify-between gap-3 p-5 sm:p-6">
+        {/* RIWAYAT TRANSAKSI (10 TERAKHIR) */}
+        <section className="overflow-hidden rounded-[28px] bg-white shadow-xl shadow-slate-900/5">
+          <div className="flex flex-wrap items-center justify-between gap-3 p-5 sm:p-6 border-b border-slate-100">
             <div>
-              <h2 className="font-semibold">Riwayat transaksi dan kode unik</h2>
-              <p className="mt-0.5 text-xs text-slate-500">Semua mutasi yang masuk ke database gateway.</p>
+              <h2 className="text-base sm:text-lg font-bold text-slate-900">Riwayat Transaksi</h2>
+              <p className="mt-0.5 text-xs text-slate-500">10 mutasi transaksi terbaru yang masuk ke gateway.</p>
             </div>
-            <div className="flex items-center gap-1 rounded-full bg-slate-100 p-1 text-xs">
-              {[['all', 'Semua'], ['paid', 'Sukses'], ['pending', 'Pending'], ['expired', 'Expired'], ['cancelled', 'Batal']].map(([k, label]) => (
+
+            <div className="flex items-center gap-1 rounded-full bg-slate-100 p-1 text-xs overflow-x-auto">
+              {[
+                ['all', 'Semua'],
+                ['paid', 'Sukses'],
+                ['pending', 'Pending'],
+                ['expired', 'Expired'],
+                ['cancelled', 'Batal']
+              ].map(([k, label]) => (
                 <button
                   key={k}
                   onClick={() => setFilter(k)}
-                  className={`rounded-full px-3.5 py-1.5 font-medium transition ${filter === k ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-900'}`}
+                  className={`rounded-full px-3.5 py-1.5 font-medium transition shrink-0 ${
+                    filter === k ? 'bg-slate-900 text-white' : 'text-slate-600 hover:text-slate-900'
+                  }`}
                 >
                   {label}
                 </button>
@@ -474,194 +228,350 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Mobile: daftar kartu */}
-          <ul className="divide-y divide-slate-100 md:hidden">
-            {filtered.length === 0 && (
-              <li className="py-10 text-center text-sm text-slate-400">Tidak ada transaksi untuk filter ini.</li>
-            )}
-            {filtered.map((t) => (
-              <li key={t.id} className="space-y-2 px-5 py-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="truncate font-semibold">{t.donor_name}</p>
-                    {t.message && <p className="truncate text-xs italic text-slate-500">"{t.message}"</p>}
-                  </div>
-                  <StatusPill status={t.status} />
-                </div>
-                <div className="flex items-end justify-between gap-3">
-                  <div className="min-w-0 text-xs text-slate-500">
-                    <button onClick={() => copyId(t.id)} className="inline-flex items-center gap-1 font-mono">
-                      {t.id}
-                      {copied === t.id ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3 text-slate-400" />}
-                    </button>
-                    <p className="mt-0.5">{t.issuer || '-'}, {fmtTime(t.created_at)} WIB</p>
-                  </div>
-                  <div className="shrink-0 text-right">
-                    <p className="font-bold">Rp {rupiah(t.amount)}</p>
-                    {t.unique_code > 0 && (
-                      <span className="mt-0.5 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold" style={{ background: LIME }}>
-                        kode unik +{t.unique_code}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-
-          {/* Desktop: tabel */}
-          <div className="hidden overflow-x-auto md:block">
+          {/* Table */}
+          <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 text-xs text-slate-500">
+              <thead className="bg-slate-50 text-xs text-slate-500 border-b border-slate-100">
                 <tr>
-                  <th className="px-5 py-3 font-medium">ID</th>
-                  <th className="px-5 py-3 font-medium">Donatur dan pesan</th>
-                  <th className="px-5 py-3 text-right font-medium">Nominal asli</th>
-                  <th className="px-5 py-3 text-center font-medium">Kode unik</th>
-                  <th className="px-5 py-3 text-right font-medium">Total bayar</th>
-                  <th className="px-5 py-3 text-center font-medium">Metode</th>
-                  <th className="px-5 py-3 text-center font-medium">Status</th>
-                  <th className="px-5 py-3 text-right font-medium">Waktu</th>
+                  <th className="px-5 py-3 font-semibold">ID</th>
+                  <th className="px-5 py-3 font-semibold">Donatur dan pesan</th>
+                  <th className="px-5 py-3 text-right font-semibold">Total bayar</th>
+                  <th className="px-5 py-3 text-center font-semibold">Status</th>
+                  <th className="px-5 py-3 text-right font-semibold">Waktu</th>
+                  <th className="px-5 py-3 text-center font-semibold">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filtered.length === 0 ? (
+                {recentTenTx.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="py-10 text-center text-slate-400">Tidak ada transaksi untuk filter ini.</td>
+                    <td colSpan={6} className="py-12 text-center text-xs text-slate-400">
+                      Tidak ada transaksi pada filter ini.
+                    </td>
                   </tr>
                 ) : (
-                  filtered.map((t) => (
-                    <tr key={t.id} className="transition hover:bg-slate-50">
-                      <td className="px-5 py-3.5">
-                        <button onClick={() => copyId(t.id)} className="inline-flex items-center gap-1.5 font-mono text-xs text-slate-600 hover:text-slate-900" title="Salin ID">
-                          {t.id}
-                          {copied === t.id ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5 text-slate-400" />}
+                  recentTenTx.map((t) => (
+                    <tr key={t.id} className="transition hover:bg-slate-50/80">
+                      {/* 1. ID */}
+                      <td className="px-5 py-3.5 font-mono text-xs">
+                        <button
+                          onClick={() => copyText(t.id, t.id)}
+                          className="inline-flex items-center gap-1 text-slate-600 hover:text-slate-900"
+                          title="Salin ID"
+                        >
+                          <span>{t.id}</span>
+                          {copied === t.id ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3 text-slate-400" />}
                         </button>
                       </td>
+
+                      {/* 2. Donatur & Pesan */}
                       <td className="px-5 py-3.5">
-                        <span className="block font-semibold">{t.donor_name}</span>
-                        {t.message && <span className="text-xs italic text-slate-500">"{t.message}"</span>}
+                        <span className="block font-semibold text-slate-900">{t.donor_name || 'Hamba Allah'}</span>
+                        {t.message && <span className="text-xs italic text-slate-500 line-clamp-1">&quot;{t.message}&quot;</span>}
                       </td>
-                      <td className="px-5 py-3.5 text-right text-slate-600">Rp {rupiah(t.base_amount)}</td>
-                      <td className="px-5 py-3.5 text-center">
-                        {t.unique_code > 0 ? (
-                          <span className="rounded-full px-2.5 py-1 text-xs font-bold" style={{ background: LIME }}>+{t.unique_code}</span>
-                        ) : (
-                          <span className="text-slate-300">-</span>
+
+                      {/* 3. Total Bayar */}
+                      <td className="px-5 py-3.5 text-right font-bold text-slate-900 whitespace-nowrap">
+                        Rp {rupiah(t.amount)}
+                        {t.unique_code > 0 && (
+                          <span className="block text-[10px] font-normal text-slate-400">
+                            unik +{t.unique_code}
+                          </span>
                         )}
                       </td>
-                      <td className="px-5 py-3.5 text-right font-bold">Rp {rupiah(t.amount)}</td>
+
+                      {/* 4. Status */}
                       <td className="px-5 py-3.5 text-center">
-                        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">{t.issuer || '-'}</span>
+                        <StatusPill status={t.status} />
                       </td>
-                      <td className="px-5 py-3.5 text-center"><StatusPill status={t.status} /></td>
-                      <td className="px-5 py-3.5 text-right text-xs text-slate-500">{fmtTime(t.created_at)} WIB</td>
+
+                      {/* 5. Waktu */}
+                      <td className="px-5 py-3.5 text-right text-xs text-slate-500 whitespace-nowrap">
+                        {fmtTime(t.created_at)}
+                      </td>
+
+                      {/* 6. Aksi (Detail Modal Trigger) */}
+                      <td className="px-5 py-3.5 text-center">
+                        <button
+                          onClick={() => setSelectedTx(t)}
+                          className="inline-flex items-center gap-1 rounded-lg bg-slate-100 hover:bg-slate-900 hover:text-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition"
+                          title="Detail Transaksi"
+                        >
+                          <Eye className="h-3.5 w-3.5" />
+                          <span className="hidden sm:inline">Detail</span>
+                        </button>
+                      </td>
                     </tr>
                   ))
                 )}
               </tbody>
             </table>
           </div>
+
+          {/* Footer Link to /riwayat */}
+          <div className="bg-slate-50/80 p-4 text-center border-t border-slate-100">
+            <Link 
+              href="/riwayat" 
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-900 hover:underline"
+            >
+              <span>Lihat Semua Transaksi ({transactions.length}) di Halaman Riwayat</span>
+              <ArrowUpRight className="h-4 w-4" />
+            </Link>
+          </div>
         </section>
 
-        {/* Webhook logs panel matching Image 1 */}
-        <section id="webhook-logs" className="overflow-hidden rounded-[28px] bg-white">
-          <div className="flex flex-wrap items-center justify-between gap-3 p-5 sm:p-6 border-b border-slate-100">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-700">
-                <History className="h-5 w-5" />
+        {/* WEBHOOK LOGS (15 TERAKHIR) */}
+        <section className="overflow-hidden rounded-[28px] bg-white shadow-xl shadow-slate-900/5">
+          <div className="flex items-center justify-between p-5 sm:p-6 border-b border-slate-100">
+            <div>
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-slate-700" />
+                <h2 className="text-base font-bold text-slate-900">Webhook Logs</h2>
+                <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-bold text-slate-600">
+                  15 Terakhir
+                </span>
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="font-semibold text-slate-900">Webhook logs</h2>
-                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">
-                    30 days
-                  </span>
-                </div>
-                <p className="mt-0.5 text-xs text-slate-500">Riwayat pengiriman webhook 30 days terakhir.</p>
-              </div>
+              <p className="mt-0.5 text-xs text-slate-500">Riwayat callback otomatis yang dikirim ke endpoint merchant.</p>
             </div>
 
-            <button
-              onClick={fetchWebhookLogs}
-              disabled={webhookLoading}
-              className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 hover:bg-slate-200 px-3.5 py-1.5 text-xs font-semibold text-slate-700 transition disabled:opacity-50"
+            <Link
+              href="/riwayat?tab=webhook"
+              className="inline-flex items-center gap-1 text-xs font-bold text-slate-700 hover:text-slate-900 hover:underline"
             >
-              <RotateCw className={`h-3.5 w-3.5 ${webhookLoading ? 'animate-spin' : ''}`} />
-              <span>Refresh</span>
-            </button>
+              <span>Semua Log</span>
+              <ArrowUpRight className="h-3.5 w-3.5" />
+            </Link>
           </div>
 
-          <div className="p-4 sm:p-6">
-            {webhookLogs.length === 0 ? (
-              <p className="text-center text-xs text-slate-400 py-8">
-                Belum ada pengiriman webhook yang tercatat. (Atur Webhook URL di menu Settings)
-              </p>
-            ) : (
-              <div className="divide-y divide-slate-100">
-                {webhookLogs.map((log) => {
-                  const isSuccess = log.response_code >= 200 && log.response_code < 300;
-                  return (
-                    <div key={log.id} className="py-3.5 flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 text-xs">
-                      <div className="flex items-start gap-3 min-w-0 flex-1">
-                        <span className={`h-2.5 w-2.5 rounded-sm mt-1 shrink-0 ${isSuccess ? 'bg-emerald-500' : 'bg-rose-500'}`} />
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-semibold text-slate-900">{log.event}</span>
-                            {!isSuccess && (
-                              <span className="font-bold text-rose-600 text-[11px]">
-                                HTTP {log.response_code}
-                              </span>
-                            )}
-                          </div>
-                          <p className="font-mono text-[11px] text-slate-500 truncate mt-0.5 max-w-md sm:max-w-xl">
-                            {log.url}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-4 text-[11px] text-slate-500 shrink-0 font-mono">
-                        {isSuccess && (
-                          <span className="text-slate-600 font-sans font-medium">HTTP {log.response_code}</span>
-                        )}
-                        <span>{log.attempts || 1}×</span>
-                        <span>{log.latency_ms} ms</span>
-                        <span className="font-sans text-slate-400">{formatWebhookDate(log.created_at)}</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-50 text-xs text-slate-500 border-b border-slate-100">
+                <tr>
+                  <th className="px-5 py-2.5 font-semibold">Event</th>
+                  <th className="px-5 py-2.5 font-semibold">Target URL</th>
+                  <th className="px-5 py-2.5 text-center font-semibold">HTTP Status</th>
+                  <th className="px-5 py-2.5 text-right font-semibold">Latency</th>
+                  <th className="px-5 py-2.5 text-right font-semibold">Waktu</th>
+                  <th className="px-5 py-2.5 text-center font-semibold">Payload</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {recentFifteenLogs.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-8 text-center text-xs text-slate-400">
+                      Belum ada callback webhook yang dikirimkan.
+                    </td>
+                  </tr>
+                ) : (
+                  recentFifteenLogs.map((log) => {
+                    const isSuccess = log.response_code >= 200 && log.response_code < 300;
+                    return (
+                      <tr key={log.id} className="transition hover:bg-slate-50/80">
+                        <td className="px-5 py-2.5">
+                          <span className="font-mono text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">
+                            {log.event}
+                          </span>
+                        </td>
+                        <td className="px-5 py-2.5 font-mono text-xs text-slate-600 max-w-xs truncate" title={log.url}>
+                          {log.url}
+                        </td>
+                        <td className="px-5 py-2.5 text-center">
+                          <span className={`inline-block px-2 py-0.5 rounded-full font-mono text-[11px] font-bold ${
+                            isSuccess ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                          }`}>
+                            {log.response_code || 500}
+                          </span>
+                        </td>
+                        <td className="px-5 py-2.5 text-right font-mono text-xs text-slate-500">
+                          {log.latency_ms || 0} ms
+                        </td>
+                        <td className="px-5 py-2.5 text-right text-xs text-slate-500 whitespace-nowrap">
+                          {fmtTime(log.created_at)}
+                        </td>
+                        <td className="px-5 py-2.5 text-center">
+                          <button
+                            onClick={() => setSelectedLog(log)}
+                            className="inline-flex items-center gap-1 rounded bg-slate-100 hover:bg-slate-900 hover:text-white px-2 py-1 text-[11px] font-semibold text-slate-700 transition"
+                          >
+                            <Eye className="h-3 w-3" />
+                            <span>Lihat</span>
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
           </div>
         </section>
       </main>
 
-      <footer className="pb-28 text-center text-xs text-slate-400 md:pb-8">SisforHub Pay Gateway Dashboard &copy; 2026</footer>
+      {/* DETAIL TRANSAKSI MODAL */}
+      {selectedTx && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <Receipt className="h-5 w-5 text-slate-900" />
+                <h3 className="font-bold text-base text-slate-900">Rincian Transaksi</h3>
+              </div>
+              <button
+                onClick={() => setSelectedTx(null)}
+                className="rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-900 transition"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
 
-      {/* Tab bar melayang (mobile) */}
-      <nav
-        aria-label="Menu utama"
-        className="fixed inset-x-0 z-50 flex justify-center px-4 md:hidden"
-        style={{ bottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
-      >
-        <div className="flex items-center gap-1 rounded-full bg-white p-1.5 shadow-lg shadow-slate-900/10 ring-1 ring-slate-900/5">
-          <TabItem
-            Icon={LayoutDashboard}
-            label="Dashboard"
-            active={tab === 'dashboard'}
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          />
-          <TabItem
-            Icon={Receipt}
-            label="Transaksi"
-            active={tab === 'riwayat'}
-            onClick={() => document.getElementById('riwayat')?.scrollIntoView({ behavior: 'smooth' })}
-          />
-          <TabItem Icon={RotateCw} label="Refresh" spin={loading} onClick={fetchStats} />
-          <TabItem Icon={LogOut} label="Keluar" onClick={handleLogout} />
+            <div className="flex items-center justify-between rounded-2xl bg-slate-50 p-4 border border-slate-100">
+              <div>
+                <span className="text-xs text-slate-400">Total Pembayaran</span>
+                <div className="text-xl font-extrabold text-slate-900">Rp {rupiah(selectedTx.amount)}</div>
+              </div>
+              <StatusPill status={selectedTx.status} />
+            </div>
+
+            <div className="divide-y divide-slate-100 text-xs">
+              <div className="flex justify-between py-2">
+                <span className="text-slate-500">ID Transaksi</span>
+                <button
+                  onClick={() => copyText(selectedTx.id, 'modal_id')}
+                  className="font-mono font-bold text-slate-900 inline-flex items-center gap-1 hover:underline"
+                >
+                  <span>{selectedTx.id}</span>
+                  {copied === 'modal_id' ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3 text-slate-400" />}
+                </button>
+              </div>
+              <div className="flex justify-between py-2">
+                <span className="text-slate-500">Nama Pelanggan</span>
+                <span className="font-semibold text-slate-900">{selectedTx.donor_name || '-'}</span>
+              </div>
+              {selectedTx.message && (
+                <div className="flex justify-between py-2">
+                  <span className="text-slate-500">Catatan / Pesan</span>
+                  <span className="font-medium text-slate-800 text-right italic">{selectedTx.message}</span>
+                </div>
+              )}
+              <div className="flex justify-between py-2">
+                <span className="text-slate-500">Nominal Pokok</span>
+                <span className="text-slate-900">Rp {rupiah(selectedTx.base_amount)}</span>
+              </div>
+              {selectedTx.fee > 0 && (
+                <div className="flex justify-between py-2">
+                  <span className="text-slate-500">Biaya Layanan (Fee)</span>
+                  <span className="font-semibold text-slate-900">+Rp {rupiah(selectedTx.fee)}</span>
+                </div>
+              )}
+              {selectedTx.unique_code > 0 && (
+                <div className="flex justify-between py-2">
+                  <span className="text-slate-500">Kode Unik Anti-Kembar</span>
+                  <span className="font-semibold text-emerald-600">+{selectedTx.unique_code}</span>
+                </div>
+              )}
+              <div className="flex justify-between py-2">
+                <span className="text-slate-500">Metode / Issuer</span>
+                <span className="font-semibold text-slate-900">{selectedTx.issuer || 'QRIS ShopeePay'}</span>
+              </div>
+              {selectedTx.transaction_id && (
+                <div className="flex justify-between py-2">
+                  <span className="text-slate-500">Shopee Mutasi ID</span>
+                  <span className="font-mono text-slate-700">{selectedTx.transaction_id}</span>
+                </div>
+              )}
+              <div className="flex justify-between py-2">
+                <span className="text-slate-500">Waktu Dibuat</span>
+                <span className="text-slate-700">{fmtTime(selectedTx.created_at)} WIB</span>
+              </div>
+              {selectedTx.paid_at && (
+                <div className="flex justify-between py-2">
+                  <span className="text-slate-500">Waktu Lunas</span>
+                  <span className="font-bold text-emerald-600">{fmtTime(selectedTx.paid_at)} WIB</span>
+                </div>
+              )}
+            </div>
+
+            <div className="pt-2">
+              <Link
+                href={`/payin/${selectedTx.id}`}
+                target="_blank"
+                className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition flex items-center justify-center gap-2"
+              >
+                <ExternalLink className="h-4 w-4" style={{ color: LIME }} />
+                <span>Buka Halaman Invoice QRIS</span>
+              </Link>
+            </div>
+          </div>
         </div>
-      </nav>
+      )}
+
+      {/* DETAIL WEBHOOK MODAL */}
+      {selectedLog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-xl rounded-3xl bg-white p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="h-5 w-5 text-slate-900" />
+                <h3 className="font-bold text-base text-slate-900">Rincian Callback Webhook</h3>
+              </div>
+              <button
+                onClick={() => setSelectedLog(null)}
+                className="rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-900 transition"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div>
+                <span className="font-semibold text-slate-400 block mb-1">Target URL</span>
+                <div className="rounded-xl bg-slate-50 p-2.5 font-mono text-slate-800 break-all border border-slate-200">
+                  {selectedLog.url}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-slate-400">Response Code: </span>
+                  <span className="font-mono font-bold text-slate-900">{selectedLog.response_code}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400">Latency: </span>
+                  <span className="font-mono text-slate-700">{selectedLog.latency_ms} ms</span>
+                </div>
+                <div>
+                  <span className="text-slate-400">Waktu: </span>
+                  <span className="text-slate-700">{fmtTime(selectedLog.created_at)} WIB</span>
+                </div>
+              </div>
+
+              <div>
+                <span className="font-semibold text-slate-400 block mb-1">Payload Dikirim (Body)</span>
+                <pre className="rounded-xl bg-slate-950 p-3 text-slate-200 font-mono text-[11px] overflow-x-auto max-h-48">
+                  {(() => {
+                    try {
+                      return JSON.stringify(JSON.parse(selectedLog.payload), null, 2);
+                    } catch (_) {
+                      return selectedLog.payload;
+                    }
+                  })()}
+                </pre>
+              </div>
+
+              <div>
+                <span className="font-semibold text-slate-400 block mb-1">Response Server Merchant</span>
+                <pre className="rounded-xl bg-slate-100 p-3 text-slate-800 font-mono text-[11px] overflow-x-auto max-h-32 border border-slate-200">
+                  {selectedLog.response_body || '(Kosong / 200 OK)'}
+                </pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Footer */}
+      <footer className="py-6 text-center text-xs text-slate-400 border-t border-slate-200/60">
+        SisforHub Pay &copy; 2026 • ShopeePay Dynamic QRIS Gateway
+      </footer>
     </div>
   );
 }
