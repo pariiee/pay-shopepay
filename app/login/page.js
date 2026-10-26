@@ -3,7 +3,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Lock, ArrowLeft, AlertCircle, RotateCw, QrCode } from 'lucide-react';
+import { Lock, ArrowLeft, AlertCircle, RotateCw } from 'lucide-react';
+
+const LIME = '#d8f53b';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -39,25 +41,27 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between items-center p-4">
+    <div className="min-h-screen bg-[#e9edf2] text-slate-900 flex flex-col justify-between items-center p-4">
       <div className="w-full max-w-sm pt-6 flex justify-start">
-        <Link href="/" className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors">
+        <Link 
+          href="/" 
+          className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-700 shadow-sm transition hover:bg-slate-900 hover:text-white"
+        >
           <ArrowLeft className="h-4 w-4" />
-          <span>Kembali ke Beranda</span>
         </Link>
       </div>
 
-      <div className="w-full max-w-sm bg-slate-900/80 border border-slate-800 p-6 sm:p-8 rounded-2xl shadow-2xl backdrop-blur">
+      <div className="w-full max-w-sm rounded-[28px] bg-white p-6 sm:p-8 shadow-xl shadow-slate-900/5">
         <div className="text-center mb-6">
-          <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto text-emerald-400 mb-3 shadow-lg shadow-emerald-500/10">
+          <div className="h-12 w-12 rounded-2xl bg-slate-900 flex items-center justify-center mx-auto mb-3" style={{ color: LIME }}>
             <Lock className="h-6 w-6" />
           </div>
-          <h1 className="text-xl font-bold text-white">Login Admin Dashboard</h1>
-          <p className="text-xs text-slate-400 mt-1">Masukkan kredensial gateway Anda</p>
+          <h1 className="text-xl font-bold text-slate-900">Login Dashboard</h1>
+          <p className="text-xs text-slate-500 mt-1">Masuk untuk memantau transaksi & gateway</p>
         </div>
 
         {error && (
-          <div className="p-3 mb-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2">
+          <div className="p-3 mb-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 text-xs flex items-center gap-2">
             <AlertCircle className="h-4 w-4 shrink-0" />
             <span>{error}</span>
           </div>
@@ -65,37 +69,37 @@ export default function LoginPage() {
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">Username</label>
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5">Username</label>
             <input
               type="text"
               required
               placeholder="admin"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:outline-none focus:border-slate-900 transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">Password</label>
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5">Password</label>
             <input
               type="password"
               required
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:outline-none focus:border-slate-900 transition-colors"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-all shadow-lg shadow-emerald-500/20 hover:scale-[1.01] disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full py-3 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm transition-all shadow-md hover:scale-[1.01] disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {loading ? (
               <>
-                <RotateCw className="h-4 w-4 animate-spin" />
+                <RotateCw className="h-4 w-4 animate-spin" style={{ color: LIME }} />
                 <span>Memverifikasi...</span>
               </>
             ) : (
@@ -105,7 +109,7 @@ export default function LoginPage() {
         </form>
       </div>
 
-      <footer className="py-4 text-center text-[11px] text-slate-600">
+      <footer className="py-4 text-center text-xs text-slate-400">
         SisforHub Pay &copy; 2026 • Protected Admin Area
       </footer>
     </div>
