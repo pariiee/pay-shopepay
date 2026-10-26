@@ -1,16 +1,151 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { 
-  ArrowLeft, RotateCw, CheckCircle2, Clock, XCircle, 
-  Wallet, TrendingUp, AlertTriangle, ShieldCheck, QrCode, Filter, LogOut
+import {
+  ArrowLeft, RotateCw, CheckCircle2, Clock, XCircle, Wallet,
+  AlertTriangle, ShieldCheck, QrCode, LogOut, Copy, Check, TrendingUp,
+  LayoutDashboard, Receipt,
 } from 'lucide-react';
+
+const DAY = 86400;
+const WIB = 7 * 3600; // offset WIB (detik)
+const BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+const LIME = '#d8f53b';
+
+const dayKey = (ts) => Math.floor((ts + WIB) / DAY);
+const rupiah = (v) => new Intl.NumberFormat('id-ID').format(v || 0);
+const fmtTime = (ts) =>
+  ts
+    ? new Date(ts * 1000).toLocaleString('id-ID', {
+        timeZone: 'Asia/Jakarta', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+      })
+    : '-';
+
+const card = 'rounded-[28px] bg-white p-4 sm:p-6';
+
+function StatusPill({ status }) {
+  if (status === 'paid')
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-white">
+        <CheckCircle2 className="h-3 w-3" style={{ color: LIME }} /> Lunas
+      </span>
+    );
+  if (status === 'pending')
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-semibold text-amber-700">
+        <Clock className="h-3 w-3" /> Pending
+      </span>
+    );
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-1 text-[11px] font-semibold text-rose-600">
+      <XCircle className="h-3 w-3" /> Batal
+    </span>
+  );
+}
+
+function RoundBtn({ children, ...props }) {
+  return (
+    <button
+      {...props}
+      className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-700 transition hover:bg-slate-900 hover:text-white disabled:opacity-50"
+    >
+      {children}
+    </button>
+  );
+}
+
+function TabItem({ active, onClick, Icon, label, spin }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex min-w-[66px] flex-col items-center gap-0.5 rounded-full px-3 py-2 text-[10px] font-semibold transition ${
+        active ? 'bg-slate-900 text-white' : 'text-slate-500'
+      }`}
+    >
+      <Icon className={`h-5 w-5 ${spin ? 'animate-spin' : ''}`} style={active ? { color: LIME } : undefined} />
+      {label}
+    </button>
+  );
+}
+
+function Chart({ series }) {
+  const [hover, setHover] = useState(null);
+  const W = 600, H = 190, PX = 16, PT = 34, PB = 26;
+  const max = Math.max(1, ...series.map((d) => d.total));
+  const step = (W - PX * 2) / (series.length - 1);
+  const y = (v) => PT + (H - PT - PB) * (1 - v / max);
+  const pts = series.map((d, i) => ({ x: PX + i * step, y: y(d.total), yp: y(d.paid) }));
+  const curve = (key) =>
+    pts
+      .map((p, i) => {
+        if (i === 0) return `M${p.x},${p[key]}`;
+        const q = pts[i - 1];
+        const mx = (q.x + p.x) / 2;
+        return `C${mx},${q[key]} ${mx},${p[key]} ${p.x},${p[key]}`;
+      })
+      .join(' ');
+  const line = curve('y');
+  const area = `${line} L${pts[pts.length - 1].x},${H - PB} L${pts[0].x},${H - PB} Z`;
+  const h = hover !== null ? pts[hover] : null;
+
+  return (
+    <div>
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label="Grafik transaksi 14 hari terakhir">
+      <defs>
+        <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={LIME} stopOpacity="0.9" />
+          <stop offset="100%" stopColor={LIME} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      {[0, 0.5, 1].map((t) => (
+        <line key={t} x1={PX} x2={W - PX} y1={PT + (H - PT - PB) * t} y2={PT + (H - PT - PB) * t} stroke="#e2e8f0" strokeDasharray="3 5" />
+      ))}
+      <path d={area} fill="url(#areaFill)" />
+      <path d={curve('yp')} fill="none" stroke="#0f172a" strokeOpacity="0.45" strokeWidth="1.5" strokeDasharray="4 5" />
+      <path d={line} fill="none" stroke="#0f172a" strokeWidth="2.5" strokeLinecap="round" />
+      {h && <line x1={h.x} x2={h.x} y1={PT - 6} y2={H - PB} stroke="#0f172a" strokeWidth="1" />}
+      {pts.map((p, i) => (
+        <g key={i} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} onFocus={() => setHover(i)} onBlur={() => setHover(null)} onClick={() => setHover(i)} tabIndex={0}>
+          <circle cx={p.x} cy={H / 2} r={step / 2} fill="transparent" />
+          <rect x={p.x - step / 2} y={0} width={step} height={H} fill="transparent" />
+          {hover === i && <circle cx={p.x} cy={p.y} r="6" fill="#fff" stroke="#0f172a" strokeWidth="2.5" />}
+        </g>
+      ))}
+      {[0, 6, 13].map((i) => (
+        <text key={i} x={pts[i].x} y={H - 6} fontSize="15" fill="#64748b" textAnchor={i === 0 ? 'start' : i === 13 ? 'end' : 'middle'}>
+          {series[i].label}
+        </text>
+      ))}
+    </svg>
+    <div className="mt-2 flex justify-center">
+      <span className="rounded-full bg-slate-900 px-3.5 py-1.5 text-xs font-semibold" style={{ color: LIME }}>
+        {hover !== null
+          ? `${series[hover].label}: ${series[hover].total} trx, ${series[hover].paid} lunas`
+          : 'Sentuh titik grafik untuk lihat detail'}
+      </span>
+    </div>
+    </div>
+  );
+}
 
 export default function DashboardPage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [copied, setCopied] = useState(null);
+  const [tab, setTab] = useState('dashboard');
+
+  useEffect(() => {
+    const el = document.getElementById('riwayat');
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([e]) => setTab(e.isIntersecting ? 'riwayat' : 'dashboard'),
+      { threshold: 0.25 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   const fetchStats = async () => {
     setLoading(true);
@@ -21,9 +156,7 @@ export default function DashboardPage() {
         return;
       }
       const json = await res.json();
-      if (json.success) {
-        setData(json.data);
-      }
+      if (json.success) setData(json.data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -36,273 +169,336 @@ export default function DashboardPage() {
     window.location.href = '/login';
   };
 
+  const copyId = async (id) => {
+    try {
+      await navigator.clipboard.writeText(id);
+      setCopied(id);
+      setTimeout(() => setCopied(null), 1500);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   useEffect(() => {
     fetchStats();
-    const interval = setInterval(fetchStats, 30000); // 30s auto refresh
+    const interval = setInterval(fetchStats, 30000);
     return () => clearInterval(interval);
   }, []);
 
-  const formatRupiah = (val) => new Intl.NumberFormat('id-ID').format(val || 0);
+  const txs = data?.transactions || [];
+  const stats = data?.stats || {};
 
-  const formatTime = (ts) => {
-    if (!ts) return '-';
-    return new Date(ts * 1000).toLocaleString('id-ID', {
-      timeZone: 'Asia/Jakarta',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    }) + ' WIB';
-  };
+  // Seri 14 hari dihitung dari daftar transaksi (zona waktu WIB)
+  const { series, todayRev, todayPaid, rev14 } = useMemo(() => {
+    const today = dayKey(Date.now() / 1000);
+    const map = {};
+    for (let i = 13; i >= 0; i--) {
+      const k = today - i;
+      const d = new Date(k * DAY * 1000);
+      map[k] = { label: `${d.getUTCDate()} ${BULAN[d.getUTCMonth()]}`, total: 0, paid: 0, rev: 0 };
+    }
+    txs.forEach((t) => {
+      const b = map[dayKey(t.created_at)];
+      if (!b) return;
+      b.total += 1;
+      if (t.status === 'paid') {
+        b.paid += 1;
+        b.rev += t.amount || 0;
+      }
+    });
+    const list = Object.values(map);
+    return {
+      series: list,
+      todayRev: list[13].rev,
+      todayPaid: list[13].paid,
+      rev14: list.reduce((s, d) => s + d.rev, 0),
+    };
+  }, [txs]);
 
-  const filteredTx = data?.transactions?.filter((tx) => {
-    if (filter === 'all') return true;
-    return tx.status === filter;
-  }) || [];
+  const paid = stats.total_paid || 0;
+  const pending = stats.total_pending || 0;
+  const cancelled = stats.total_cancelled || 0;
+  const totalTrx = paid + pending + cancelled;
+  const rate = totalTrx ? Math.round((paid / totalTrx) * 100) : 0;
+
+  const filtered = txs.filter((t) => filter === 'all' || t.status === filter);
+  const recent = txs.slice(0, 5);
+  const tokenOk = data?.token_status === 'valid';
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between">
+    <div className="min-h-screen bg-[#e9edf2] text-slate-900">
       {/* Header */}
-      <header className="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors mr-2">
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-            <div className="h-8 w-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold">
+      <header className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-5 sm:px-6">
+        <div className="flex items-center gap-3">
+          <Link href="/" aria-label="Kembali" className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-600 transition hover:bg-slate-900 hover:text-white">
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+          <div className="flex items-center gap-2">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900" style={{ color: LIME }}>
               <QrCode className="h-4 w-4" />
             </div>
-            <span className="font-bold text-base text-white">
-              Dashboard <span className="text-emerald-400">Gateway</span>
-            </span>
+            <span className="text-lg font-bold tracking-tight">SisforHub Pay</span>
           </div>
+        </div>
 
-          <div className="flex items-center gap-3">
-            <button
-              onClick={fetchStats}
-              disabled={loading}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-semibold text-slate-300 hover:text-white hover:border-slate-700 transition-colors disabled:opacity-50"
-            >
-              <RotateCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin text-emerald-400' : ''}`} />
-              <span>Refresh</span>
-            </button>
-            <button
-              onClick={handleLogout}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-950/30 border border-rose-900/40 text-xs font-semibold text-rose-300 hover:bg-rose-900/50 hover:text-rose-200 transition-colors"
-            >
-              <LogOut className="h-3.5 w-3.5" />
-              <span>Keluar</span>
-            </button>
+        <nav className="hidden items-center gap-1 rounded-full bg-white p-1 text-sm font-medium md:flex">
+          <span className="rounded-full bg-slate-900 px-4 py-2 text-white">Dashboard</span>
+          <a href="#riwayat" className="rounded-full px-4 py-2 text-slate-500 transition hover:text-slate-900">Transaksi</a>
+        </nav>
+
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 rounded-full bg-white p-2.5 text-xs sm:py-2 sm:pl-3 sm:pr-4">
+            {tokenOk ? <ShieldCheck className="h-4 w-4 text-emerald-600" /> : <AlertTriangle className="h-4 w-4 text-rose-500" />}
+            <span className="hidden font-semibold sm:inline">Ngecode Aje</span>
+            <span className={`hidden sm:inline ${tokenOk ? 'text-emerald-600' : 'text-rose-500'}`}>{tokenOk ? 'Token valid' : 'Token perlu update'}</span>
+          </div>
+          <div className="hidden items-center gap-2 md:flex">
+            <RoundBtn onClick={fetchStats} disabled={loading} aria-label="Refresh">
+              <RotateCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            </RoundBtn>
+            <RoundBtn onClick={handleLogout} aria-label="Keluar">
+              <LogOut className="h-4 w-4" />
+            </RoundBtn>
           </div>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-8 flex-1 w-full space-y-6">
-        {/* Token Status & Merchant Banner */}
-        <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-xl bg-slate-900/60 border border-slate-800 text-xs">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="h-4 w-4 text-emerald-400" />
-            <span className="text-slate-400">Merchant Terhubung:</span>
-            <strong className="text-white">Ngecode Aje (ShopeePay Partner)</strong>
+      <main className="mx-auto max-w-7xl space-y-4 px-4 pb-10 sm:px-6">
+        <div className="px-1 pb-1">
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Overview</h1>
+          <p className="mt-1 text-sm text-slate-500">Pantau performa pembayaran QRIS kamu.</p>
+        </div>
+
+        {/* Ringkasan */}
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+          {/* Total revenue: kartu hitam */}
+          <div className="rounded-[28px] bg-slate-900 p-4 text-white sm:p-6">
+            <div className="flex items-center justify-between text-sm text-slate-400">
+              <span>Total uang masuk</span>
+              <Wallet className="h-4 w-4" style={{ color: LIME }} />
+            </div>
+            <p className="mt-4 text-xl font-bold tracking-tight sm:text-3xl">Rp {rupiah(stats.total_volume)}</p>
+            <p className="mt-1 text-xs text-slate-400">Dari {paid} transaksi lunas</p>
+
+            <div className="mt-6 text-xs text-slate-400">Tingkat sukses {rate}%</div>
+            <div
+              className="mt-2 h-3 overflow-hidden rounded-full"
+              style={{ background: 'repeating-linear-gradient(135deg,#475569 0 3px,transparent 3px 7px)' }}
+            >
+              <div className="h-full rounded-full" style={{ width: `${rate}%`, background: LIME }} />
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-slate-400">Token Status:</span>
-            {data?.token_status === 'valid' ? (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                Aktif & Valid
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">
-                <AlertTriangle className="h-3 w-3" />
-                Perlu Update
-              </span>
-            )}
+
+          {/* Hari ini: kartu lime */}
+          <div className="rounded-[28px] p-4 sm:p-6" style={{ background: LIME }}>
+            <div className="flex items-center justify-between text-sm text-slate-800/70">
+              <span>Pemasukan hari ini</span>
+              <TrendingUp className="h-4 w-4 text-slate-900" />
+            </div>
+            <p className="mt-4 text-xl font-bold tracking-tight sm:text-3xl">Rp {rupiah(todayRev)}</p>
+            <p className="mt-1 text-xs text-slate-800/70">{todayPaid} transaksi lunas hari ini</p>
+          </div>
+
+          <div className={card}>
+            <div className="flex items-center justify-between text-sm text-slate-500">
+              <span>Menunggu bayar</span>
+              <Clock className="h-4 w-4 text-amber-500" />
+            </div>
+            <p className="mt-4 text-xl font-bold tracking-tight sm:text-3xl">{pending}</p>
+            <p className="mt-1 text-xs text-slate-500">Aktif dalam 15 menit</p>
+          </div>
+
+          <div className={card}>
+            <div className="flex items-center justify-between text-sm text-slate-500">
+              <span>Batal atau kedaluwarsa</span>
+              <XCircle className="h-4 w-4 text-rose-500" />
+            </div>
+            <p className="mt-4 text-xl font-bold tracking-tight sm:text-3xl">{cancelled}</p>
+            <p className="mt-1 text-xs text-slate-500">Dibatalkan user atau timeout</p>
           </div>
         </div>
 
-        {/* Metric Cards Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800/80">
-            <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
-              <span>Total Uang Masuk</span>
-              <Wallet className="h-4 w-4 text-emerald-400" />
+        {/* Grafik + transaksi terbaru */}
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+          <section className={`${card} lg:col-span-7`}>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2 className="font-semibold">14 hari terakhir</h2>
+                <p className="mt-0.5 text-xs text-slate-500">Garis tebal: semua transaksi. Garis putus-putus: yang lunas.</p>
+              </div>
+              <span className="rounded-full bg-slate-900 px-3 py-1.5 text-sm font-bold" style={{ color: LIME }}>
+                Rp {rupiah(rev14)}
+              </span>
             </div>
-            <p className="text-xl sm:text-2xl font-black text-emerald-400">
-              Rp {formatRupiah(data?.stats?.total_volume)}
-            </p>
-            <span className="text-[11px] text-slate-500 mt-1 block">
-              Dari {data?.stats?.total_paid || 0} transaksi lunas
-            </span>
-          </div>
+            <div className="mt-4">
+              <Chart series={series} />
+            </div>
+          </section>
 
-          <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800/80">
-            <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
-              <span>Transaksi Sukses</span>
-              <CheckCircle2 className="h-4 w-4 text-teal-400" />
+          <section className={`${card} lg:col-span-5`}>
+            <div className="flex items-center justify-between">
+              <h2 className="font-semibold">Transaksi terbaru</h2>
+              <a href="#riwayat" className="text-xs font-semibold text-slate-500 underline underline-offset-4 hover:text-slate-900">Lihat semua</a>
             </div>
-            <p className="text-xl sm:text-2xl font-black text-white">
-              {data?.stats?.total_paid || 0}
-            </p>
-            <span className="text-[11px] text-teal-400 mt-1 block">
-              Tercatat otomatis
-            </span>
-          </div>
-
-          <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800/80">
-            <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
-              <span>Menunggu Bayar</span>
-              <Clock className="h-4 w-4 text-amber-400" />
-            </div>
-            <p className="text-xl sm:text-2xl font-black text-amber-400">
-              {data?.stats?.total_pending || 0}
-            </p>
-            <span className="text-[11px] text-slate-500 mt-1 block">
-              Aktif dalam 15 menit
-            </span>
-          </div>
-
-          <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800/80">
-            <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
-              <span>Dibatalkan / Kadaluarsa</span>
-              <XCircle className="h-4 w-4 text-rose-400" />
-            </div>
-            <p className="text-xl sm:text-2xl font-black text-slate-400">
-              {data?.stats?.total_cancelled || 0}
-            </p>
-            <span className="text-[11px] text-slate-500 mt-1 block">
-              Oleh user atau timeout
-            </span>
-          </div>
+            <ul className="mt-3 divide-y divide-slate-100">
+              {recent.length === 0 && <li className="py-8 text-center text-sm text-slate-400">Belum ada transaksi.</li>}
+              {recent.map((t) => (
+                <li key={t.id} className="flex items-center gap-3 py-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-900 text-sm font-bold" style={{ color: LIME }}>
+                    {(t.donor_name || '?').charAt(0).toUpperCase()}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold">{t.donor_name}</p>
+                    <p className="text-xs text-slate-500">{t.issuer || 'Belum dibayar'}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className={`text-sm font-bold ${t.status === 'paid' ? 'text-emerald-600' : 'text-slate-400 line-through'}`}>
+                      {t.status === 'paid' ? '+' : ''}Rp {rupiah(t.amount)}
+                    </p>
+                    <p className="text-[11px] text-slate-400">{fmtTime(t.created_at)}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
         </div>
 
-        {/* Transactions Table Section */}
-        <div className="bg-slate-900/80 border border-slate-800/80 rounded-2xl overflow-hidden shadow-xl">
-          <div className="p-4 sm:p-5 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
+        {/* Riwayat lengkap */}
+        <section id="riwayat" className="overflow-hidden rounded-[28px] bg-white">
+          <div className="flex flex-wrap items-center justify-between gap-3 p-5 sm:p-6">
             <div>
-              <h2 className="text-base font-bold text-white">Riwayat Transaksi & Kode Unik</h2>
-              <p className="text-xs text-slate-400 mt-0.5">Daftar transaksi mutasi yang masuk ke database gateway</p>
+              <h2 className="font-semibold">Riwayat transaksi dan kode unik</h2>
+              <p className="mt-0.5 text-xs text-slate-500">Semua mutasi yang masuk ke database gateway.</p>
             </div>
-
-            {/* Filter Tabs */}
-            <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
-              <button
-                onClick={() => setFilter('all')}
-                className={`px-3 py-1 rounded-lg font-medium transition-colors ${
-                  filter === 'all' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                Semua
-              </button>
-              <button
-                onClick={() => setFilter('paid')}
-                className={`px-3 py-1 rounded-lg font-medium transition-colors ${
-                  filter === 'paid' ? 'bg-emerald-500/20 text-emerald-300' : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                Sukses
-              </button>
-              <button
-                onClick={() => setFilter('pending')}
-                className={`px-3 py-1 rounded-lg font-medium transition-colors ${
-                  filter === 'pending' ? 'bg-amber-500/20 text-amber-300' : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                Pending
-              </button>
-              <button
-                onClick={() => setFilter('cancelled')}
-                className={`px-3 py-1 rounded-lg font-medium transition-colors ${
-                  filter === 'cancelled' ? 'bg-rose-500/20 text-rose-300' : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                Batal
-              </button>
+            <div className="flex items-center gap-1 rounded-full bg-slate-100 p-1 text-xs">
+              {[['all', 'Semua'], ['paid', 'Sukses'], ['pending', 'Pending'], ['cancelled', 'Batal']].map(([k, label]) => (
+                <button
+                  key={k}
+                  onClick={() => setFilter(k)}
+                  className={`rounded-full px-3.5 py-1.5 font-medium transition ${filter === k ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-900'}`}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-950/70 border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[10px]">
+          {/* Mobile: daftar kartu */}
+          <ul className="divide-y divide-slate-100 md:hidden">
+            {filtered.length === 0 && (
+              <li className="py-10 text-center text-sm text-slate-400">Tidak ada transaksi untuk filter ini.</li>
+            )}
+            {filtered.map((t) => (
+              <li key={t.id} className="space-y-2 px-5 py-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold">{t.donor_name}</p>
+                    {t.message && <p className="truncate text-xs italic text-slate-500">"{t.message}"</p>}
+                  </div>
+                  <StatusPill status={t.status} />
+                </div>
+                <div className="flex items-end justify-between gap-3">
+                  <div className="min-w-0 text-xs text-slate-500">
+                    <button onClick={() => copyId(t.id)} className="inline-flex items-center gap-1 font-mono">
+                      {t.id}
+                      {copied === t.id ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3 text-slate-400" />}
+                    </button>
+                    <p className="mt-0.5">{t.issuer || '-'}, {fmtTime(t.created_at)} WIB</p>
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <p className="font-bold">Rp {rupiah(t.amount)}</p>
+                    {t.unique_code > 0 && (
+                      <span className="mt-0.5 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold" style={{ background: LIME }}>
+                        kode unik +{t.unique_code}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          {/* Desktop: tabel */}
+          <div className="hidden overflow-x-auto md:block">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-50 text-xs text-slate-500">
                 <tr>
-                  <th className="py-3 px-4">ID / Ref</th>
-                  <th className="py-3 px-4">Donatur & Pesan</th>
-                  <th className="py-3 px-4 text-right">Nominal Asli</th>
-                  <th className="py-3 px-4 text-center">Kode Unik</th>
-                  <th className="py-3 px-4 text-right">Total Bayar</th>
-                  <th className="py-3 px-4 text-center">Metode (Issuer)</th>
-                  <th className="py-3 px-4 text-center">Status</th>
-                  <th className="py-3 px-4 text-right">Waktu</th>
+                  <th className="px-5 py-3 font-medium">ID</th>
+                  <th className="px-5 py-3 font-medium">Donatur dan pesan</th>
+                  <th className="px-5 py-3 text-right font-medium">Nominal asli</th>
+                  <th className="px-5 py-3 text-center font-medium">Kode unik</th>
+                  <th className="px-5 py-3 text-right font-medium">Total bayar</th>
+                  <th className="px-5 py-3 text-center font-medium">Metode</th>
+                  <th className="px-5 py-3 text-center font-medium">Status</th>
+                  <th className="px-5 py-3 text-right font-medium">Waktu</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60 font-mono">
-                {filteredTx.length === 0 ? (
+              <tbody className="divide-y divide-slate-100">
+                {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="py-8 text-center text-slate-500 font-sans text-xs">
-                      Tidak ada data transaksi yang sesuai filter.
-                    </td>
+                    <td colSpan={8} className="py-10 text-center text-slate-400">Tidak ada transaksi untuk filter ini.</td>
                   </tr>
                 ) : (
-                  filteredTx.map((tx) => (
-                    <tr key={tx.id} className="hover:bg-slate-800/30 transition-colors">
-                      <td className="py-3 px-4 text-slate-300 font-bold">{tx.id}</td>
-                      <td className="py-3 px-4 font-sans">
-                        <span className="font-semibold text-white block">{tx.donor_name}</span>
-                        {tx.message && <span className="text-slate-400 text-[11px] italic">"{tx.message}"</span>}
+                  filtered.map((t) => (
+                    <tr key={t.id} className="transition hover:bg-slate-50">
+                      <td className="px-5 py-3.5">
+                        <button onClick={() => copyId(t.id)} className="inline-flex items-center gap-1.5 font-mono text-xs text-slate-600 hover:text-slate-900" title="Salin ID">
+                          {t.id}
+                          {copied === t.id ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5 text-slate-400" />}
+                        </button>
                       </td>
-                      <td className="py-3 px-4 text-right text-slate-300">
-                        Rp {formatRupiah(tx.base_amount)}
+                      <td className="px-5 py-3.5">
+                        <span className="block font-semibold">{t.donor_name}</span>
+                        {t.message && <span className="text-xs italic text-slate-500">"{t.message}"</span>}
                       </td>
-                      <td className="py-3 px-4 text-center">
-                        {tx.unique_code > 0 ? (
-                          <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-500/10 text-amber-300 border border-amber-500/20">
-                            +{tx.unique_code}
-                          </span>
+                      <td className="px-5 py-3.5 text-right text-slate-600">Rp {rupiah(t.base_amount)}</td>
+                      <td className="px-5 py-3.5 text-center">
+                        {t.unique_code > 0 ? (
+                          <span className="rounded-full px-2.5 py-1 text-xs font-bold" style={{ background: LIME }}>+{t.unique_code}</span>
                         ) : (
-                          <span className="text-slate-600">-</span>
+                          <span className="text-slate-300">-</span>
                         )}
                       </td>
-                      <td className="py-3 px-4 text-right font-bold text-emerald-400">
-                        Rp {formatRupiah(tx.amount)}
+                      <td className="px-5 py-3.5 text-right font-bold">Rp {rupiah(t.amount)}</td>
+                      <td className="px-5 py-3.5 text-center">
+                        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">{t.issuer || '-'}</span>
                       </td>
-                      <td className="py-3 px-4 text-center font-sans">
-                        <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-slate-800 text-slate-300">
-                          {tx.issuer || '-'}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-center font-sans">
-                        {tx.status === 'paid' ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                            <CheckCircle2 className="h-3 w-3" />
-                            Lunas
-                          </span>
-                        ) : tx.status === 'pending' ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-300 border border-amber-500/20">
-                            <Clock className="h-3 w-3" />
-                            Pending
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-400">
-                            Batal
-                          </span>
-                        )}
-                      </td>
-                      <td className="py-3 px-4 text-right text-slate-400 text-[11px] font-sans">
-                        {formatTime(tx.created_at)}
-                      </td>
+                      <td className="px-5 py-3.5 text-center"><StatusPill status={t.status} /></td>
+                      <td className="px-5 py-3.5 text-right text-xs text-slate-500">{fmtTime(t.created_at)} WIB</td>
                     </tr>
                   ))
                 )}
               </tbody>
             </table>
           </div>
-        </div>
+        </section>
       </main>
 
-      <footer className="py-6 text-center text-xs text-slate-600 border-t border-slate-900">
-        SisforHub Pay Gateway Dashboard &copy; 2026
-      </footer>
+      <footer className="pb-28 text-center text-xs text-slate-400 md:pb-8">SisforHub Pay Gateway Dashboard &copy; 2026</footer>
+
+      {/* Tab bar melayang (mobile) */}
+      <nav
+        aria-label="Menu utama"
+        className="fixed inset-x-0 z-50 flex justify-center px-4 md:hidden"
+        style={{ bottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
+      >
+        <div className="flex items-center gap-1 rounded-full bg-white p-1.5 shadow-lg shadow-slate-900/10 ring-1 ring-slate-900/5">
+          <TabItem
+            Icon={LayoutDashboard}
+            label="Dashboard"
+            active={tab === 'dashboard'}
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          />
+          <TabItem
+            Icon={Receipt}
+            label="Transaksi"
+            active={tab === 'riwayat'}
+            onClick={() => document.getElementById('riwayat')?.scrollIntoView({ behavior: 'smooth' })}
+          />
+          <TabItem Icon={RotateCw} label="Refresh" spin={loading} onClick={fetchStats} />
+          <TabItem Icon={LogOut} label="Keluar" onClick={handleLogout} />
+        </div>
+      </nav>
     </div>
   );
 }
