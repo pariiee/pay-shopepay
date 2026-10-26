@@ -6,6 +6,13 @@ import { generateDynamicQRIS } from '@/lib/shopee';
 
 export async function POST(req) {
   try {
+    const apiKeyHeader = req.headers.get('x-api-key') || req.headers.get('authorization')?.replace('Bearer ', '');
+    const currentApiKey = getSetting('api_key', process.env.API_KEY || 'al-yra7890ia8');
+
+    if (currentApiKey && apiKeyHeader !== currentApiKey) {
+      return NextResponse.json({ success: false, error: 'Unauthorized: Invalid or missing X-API-Key' }, { status: 401 });
+    }
+
     const body = await req.json();
     const rawAmount = parseInt(body.amount, 10);
     const customerName = (body.customer_name || body.donor_name || 'Pelanggan').trim().slice(0, 50);
