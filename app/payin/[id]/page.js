@@ -181,7 +181,7 @@ export default function InvoicePage({ params }) {
     return (
       <div className="min-h-screen bg-[#e9edf2] text-slate-900 flex flex-col justify-between items-center p-4">
         <div className="w-full max-w-md pt-6 flex justify-start">
-          <Link href="/donasi" className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-700 shadow-sm transition hover:bg-slate-900 hover:text-white">
+          <Link href="/donate" className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-700 shadow-sm transition hover:bg-slate-900 hover:text-white">
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </div>
@@ -191,7 +191,7 @@ export default function InvoicePage({ params }) {
           </div>
           <h2 className="text-lg font-bold text-slate-900">Invoice Tidak Ditemukan</h2>
           <p className="text-xs text-slate-500 mt-1 mb-6">{error || 'ID tagihan tidak terdaftar di database.'}</p>
-          <Link href="/donasi" className="inline-block w-full py-3 rounded-full bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition">
+          <Link href="/donate" className="inline-block w-full py-3 rounded-full bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition">
             Buat Pembayaran Baru
           </Link>
         </div>
@@ -205,7 +205,7 @@ export default function InvoicePage({ params }) {
       {/* Top Navbar */}
       <div className="w-full max-w-lg mx-auto pt-2 flex items-center justify-between">
         <Link 
-          href="/donasi" 
+          href="/donate" 
           className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-700 shadow-sm transition hover:bg-slate-900 hover:text-white"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -369,7 +369,7 @@ export default function InvoicePage({ params }) {
               </button>
             ) : (
               <Link
-                href="/donasi"
+                href="/donate"
                 className="block w-full py-3 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs text-center transition"
               >
                 Buat Pembayaran Baru

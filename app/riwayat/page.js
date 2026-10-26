@@ -6,6 +6,7 @@ import {
   ArrowLeft, Search, Check, Copy, Clock, CheckCircle2, 
   XCircle, RotateCw, Receipt, ShieldCheck, Eye, ExternalLink, X
 } from 'lucide-react';
+import Navbar from '@/components/Navbar';
 
 const LIME = '#d8f53b';
 
@@ -125,31 +126,13 @@ export default function RiwayatPage() {
   });
 
   return (
-    <div className="min-h-screen bg-[#e9edf2] text-slate-900 flex flex-col justify-between p-4 sm:p-6">
-      <div className="w-full max-w-6xl mx-auto space-y-6">
-        {/* Top Navbar */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <Link 
-              href="/dashboard" 
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-700 shadow-sm transition hover:bg-slate-900 hover:text-white"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-            <div>
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">Riwayat Gateway</h1>
-              <p className="text-xs text-slate-500">Mutasi transaksi QRIS dan log pengiriman webhook</p>
-            </div>
-          </div>
+    <div className="min-h-screen bg-[#e9edf2] text-slate-900 flex flex-col justify-between">
+      <Navbar active="riwayat" onRefresh={fetchData} loading={loading} />
 
-          <button
-            onClick={fetchData}
-            disabled={loading}
-            className="inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition disabled:opacity-50"
-          >
-            <RotateCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
-            <span>Refresh</span>
-          </button>
+      <main className="mx-auto w-full max-w-6xl space-y-6 px-4 pb-16 sm:px-6 flex-1">
+        <div className="px-1 pt-1">
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Riwayat Gateway</h1>
+          <p className="mt-1 text-sm text-slate-500">Mutasi transaksi QRIS dan log pengiriman webhook callback.</p>
         </div>
 
         {/* Tab Switcher */}
@@ -554,7 +537,10 @@ export default function RiwayatPage() {
             </div>
           </div>
         )}
-      </div>
+      </main>
+      <footer className="pb-28 text-center text-xs text-slate-400 md:pb-8">
+        SisforHub Pay Gateway Riwayat &copy; 2026
+      </footer>
     </div>
   );
 }

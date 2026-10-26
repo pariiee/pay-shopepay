@@ -6,6 +6,7 @@ import {
   ArrowLeft, KeyRound, Copy, Check, Eye, EyeOff, 
   Terminal, ShieldCheck, BookOpen, RotateCw, Save, Sparkles, AlertCircle
 } from 'lucide-react';
+import Navbar from '@/components/Navbar';
 
 const LIME = '#d8f53b';
 const PREFIX = 'al-';
@@ -101,19 +102,10 @@ export default function ApiKeyPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#e9edf2] text-slate-900 flex flex-col justify-between p-4">
-      {/* Header */}
-      <div className="w-full max-w-2xl mx-auto pt-4 flex items-center justify-between">
-        <Link 
-          href="/dashboard" 
-          className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-700 shadow-sm transition hover:bg-slate-900 hover:text-white"
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </Link>
-        <span className="text-sm font-bold text-slate-700">API Credentials</span>
-      </div>
+    <div className="min-h-screen bg-[#e9edf2] text-slate-900 flex flex-col justify-between">
+      <Navbar active="api-keys" onRefresh={fetchKey} loading={loading} />
 
-      <main className="w-full max-w-2xl mx-auto my-6 flex-1 space-y-4">
+      <main className="w-full max-w-2xl mx-auto px-4 pb-20 sm:px-6 flex-1 space-y-4">
         {/* Active API Key Box */}
         <div className="rounded-[28px] bg-white p-6 sm:p-8 shadow-xl shadow-slate-900/5">
           <div className="flex items-center gap-3 mb-6">
@@ -259,7 +251,7 @@ export default function ApiKeyPage() {
         </div>
       </main>
 
-      <footer className="py-4 text-center text-xs text-slate-400">
+      <footer className="pb-28 text-center text-xs text-slate-400 md:pb-8">
         SisforHub Pay &copy; 2026 • Custom API Key Module
       </footer>
     </div>

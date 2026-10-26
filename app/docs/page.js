@@ -6,6 +6,7 @@ import {
   ArrowLeft, BookOpen, KeyRound, Check, Copy, 
   ChevronDown, ChevronRight, Play
 } from 'lucide-react';
+import Navbar from '@/components/Navbar';
 
 const LIME = '#d8f53b';
 
@@ -68,39 +69,9 @@ export default function DocsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-900 pb-20">
-      {/* Top Navbar */}
-      <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-4 py-3.5 sm:px-6">
-          <div className="flex items-center gap-3">
-            <Link 
-              href="/dashboard" 
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700 transition hover:bg-slate-900 hover:text-white"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900" style={{ color: LIME }}>
-                <BookOpen className="h-4 w-4" />
-              </div>
-              <span className="text-base font-bold tracking-tight">API Reference</span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="hidden sm:inline-block font-mono text-xs px-2.5 py-1 bg-slate-100 rounded-md text-slate-600 border border-slate-200">
-              https://pay.sisforhub.web.id
-            </span>
-            <Link 
-              href="/api-keys" 
-              className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition"
-            >
-              <KeyRound className="h-3 w-3" />
-              <span>API Keys</span>
-            </Link>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-[#f8fafc] text-slate-900 pb-28">
+      {/* Universal Navbar */}
+      <Navbar active="docs" />
 
       {/* Main Container */}
       <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 space-y-8">

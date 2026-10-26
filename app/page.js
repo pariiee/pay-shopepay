@@ -28,7 +28,7 @@ export default function HomePage() {
             <span>Dashboard</span>
           </Link>
           <Link
-            href="/donasi"
+            href="/donate"
             className="flex items-center gap-1.5 rounded-full px-5 py-2 text-xs font-bold transition hover:opacity-95 shadow-sm"
             style={{ background: LIME, color: '#0f172a' }}
           >
@@ -58,7 +58,7 @@ export default function HomePage() {
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Link
-                href="/donasi"
+                href="/donate"
                 className="inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-sm font-bold text-slate-950 transition hover:scale-[1.02] shadow-lg shadow-lime-300/10"
                 style={{ background: LIME }}
               >
@@ -124,7 +124,7 @@ export default function HomePage() {
             </div>
           </div>
           <Link
-            href="/donasi"
+            href="/donate"
             className="w-full sm:w-auto text-center rounded-full bg-slate-900 px-6 py-3 text-xs font-bold text-white transition hover:bg-slate-800 shrink-0"
           >
             Mulai Uji Coba Sekarang
@@ -136,7 +136,7 @@ export default function HomePage() {
       <footer className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 text-center text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-300/60">
         <p>© 2026 SisforHub Pay • Merchant: Ngecode Aje</p>
         <div className="flex items-center gap-3">
-          <Link href="/donasi" className="hover:text-slate-900 transition">Donasi</Link>
+          <Link href="/donate" className="hover:text-slate-900 transition">Donasi</Link>
           <span>•</span>
           <Link href="/dashboard" className="hover:text-slate-900 transition">Dashboard</Link>
         </div>

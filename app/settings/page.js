@@ -5,8 +5,9 @@ import Link from 'next/link';
 import { 
   ArrowLeft, Settings, Save, RotateCw, CheckCircle2, 
   Store, Hash, KeyRound, AlertCircle, ShieldCheck, 
-  QrCode, Plus, Trash2, Palette
+  QrCode, Plus, Trash2, Palette, Eye
 } from 'lucide-react';
+import Navbar from '@/components/Navbar';
 
 const LIME = '#d8f53b';
 
@@ -33,11 +34,30 @@ export default function SettingsPage() {
   const [qrStyle, setQrStyle] = useState('classic');
   const [qrColor, setQrColor] = useState('#0f172a');
   const [customColor, setCustomColor] = useState('#2563eb');
+  const [previewQr, setPreviewQr] = useState('');
+  const [previewLoading, setPreviewLoading] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    let active = true;
+    const fetchPreview = async () => {
+      setPreviewLoading(true);
+      try {
+        const res = await fetch(`/api/settings/qr-preview?style=${qrStyle}&color=${encodeURIComponent(qrColor)}`);
+        const json = await res.json();
+        if (active && json.success) setPreviewQr(json.qr_image);
+      } catch (_) {}
+      finally {
+        if (active) setPreviewLoading(false);
+      }
+    };
+    const t = setTimeout(fetchPreview, 100);
+    return () => { active = false; clearTimeout(t); };
+  }, [qrStyle, qrColor]);
 
   const fetchSettings = async () => {
     setLoading(true);
@@ -133,19 +153,10 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#e9edf2] text-slate-900 flex flex-col justify-between p-4">
-      {/* Header */}
-      <div className="w-full max-w-2xl mx-auto pt-4 flex items-center justify-between">
-        <Link 
-          href="/dashboard" 
-          className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-700 shadow-sm transition hover:bg-slate-900 hover:text-white"
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </Link>
-        <span className="text-sm font-bold text-slate-700">Pengaturan Gateway</span>
-      </div>
+    <div className="min-h-screen bg-[#e9edf2] text-slate-900 flex flex-col justify-between">
+      <Navbar active="settings" onRefresh={fetchSettings} loading={loading} />
 
-      <main className="w-full max-w-2xl mx-auto my-6 flex-1">
+      <main className="w-full max-w-2xl mx-auto px-4 pb-20 sm:px-6 flex-1">
         <div className="rounded-[28px] bg-white p-6 sm:p-8 shadow-xl shadow-slate-900/5">
           <div className="flex items-center gap-3 border-b border-slate-100 pb-5 mb-6">
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 text-white" style={{ color: LIME }}>
@@ -370,6 +381,37 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 </div>
+
+                {/* Live QR Style Preview Box */}
+                <div className="rounded-2xl bg-slate-50 border border-slate-200/80 p-4 flex flex-col sm:flex-row items-center gap-4 mt-3">
+                  <div className="bg-white p-3 rounded-2xl shadow-sm border border-slate-100 shrink-0 relative flex items-center justify-center">
+                    {previewLoading && (
+                      <div className="absolute inset-0 bg-white/75 backdrop-blur-[1px] rounded-2xl flex items-center justify-center z-10">
+                        <RotateCw className="h-5 w-5 animate-spin text-slate-800" />
+                      </div>
+                    )}
+                    {previewQr ? (
+                      <img src={previewQr} alt="Preview QRIS" className="w-36 h-36 object-contain rounded-lg" />
+                    ) : (
+                      <div className="w-36 h-36 flex items-center justify-center text-xs text-slate-400">
+                        Memuat QR...
+                      </div>
+                    )}
+                  </div>
+                  <div className="space-y-1.5 text-center sm:text-left min-w-0 flex-1">
+                    <div className="inline-flex items-center gap-1.5 rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] font-bold text-white">
+                      <span className="h-2 w-2 rounded-full" style={{ backgroundColor: qrColor }} />
+                      <span>{QR_STYLES.find(s => s.id === qrStyle)?.label || qrStyle}</span>
+                    </div>
+                    <h3 className="font-bold text-slate-900 text-sm">Preview Real-Time QRIS</h3>
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      Ini tampilan nyata QRIS yang akan dilihat pembeli di invoice /payin/:id. Tetap terbaca cepat oleh BCA, Mandiri, BRI, GoPay, OVO, Dana, & ShopeePay.
+                    </p>
+                    <div className="text-[11px] font-mono text-slate-400 pt-0.5">
+                      Warna aktif: <strong className="text-slate-700">{qrColor}</strong>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* API Key */}
@@ -413,7 +455,7 @@ export default function SettingsPage() {
         </div>
       </main>
 
-      <footer className="py-4 text-center text-xs text-slate-400">
+      <footer className="pb-28 text-center text-xs text-slate-400 md:pb-8">
         SisforHub Pay &copy; 2026 • Settings Module
       </footer>
     </div>
