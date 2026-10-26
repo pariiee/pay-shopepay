@@ -63,7 +63,7 @@ export default function DonasiPage() {
     const checkStatus = async () => {
       setChecking(true);
       try {
-        const res = await fetch(`/api/donasi/status?id=${paymentData.id}`);
+        const res = await fetch(`/payments/${paymentData.id}/status`);
         const data = await res.json();
         if (data.success && data.paid) {
           setPaidResult(data.donation);
@@ -129,7 +129,7 @@ export default function DonasiPage() {
     if (!paymentData || checking) return;
     setChecking(true);
     try {
-      const res = await fetch(`/api/donasi/status?id=${paymentData.id}`);
+      const res = await fetch(`/payments/${paymentData.id}/status`);
       const data = await res.json();
       if (data.success && data.paid) {
         setPaidResult(data.donation);

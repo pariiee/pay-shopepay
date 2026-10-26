@@ -22,6 +22,12 @@ function StatusPill({ status }) {
         <Clock className="h-3 w-3" /> Pending
       </span>
     );
+  if (status === 'expired')
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-500">
+        <Clock className="h-3 w-3 text-slate-400" /> Expired
+      </span>
+    );
   return (
     <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-1 text-[11px] font-semibold text-rose-600">
       <XCircle className="h-3 w-3" /> Batal
@@ -147,6 +153,7 @@ export default function TransactionsPage() {
               ['all', 'Semua'],
               ['paid', 'Sukses'],
               ['pending', 'Pending'],
+              ['expired', 'Expired'],
               ['cancelled', 'Batal']
             ].map(([k, label]) => (
               <button

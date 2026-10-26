@@ -126,7 +126,7 @@ export default function DocsPage() {
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <span className="rounded-lg bg-blue-100 text-blue-800 font-mono font-bold text-xs px-2.5 py-1">GET</span>
-              <code className="font-mono text-sm font-bold text-slate-900">/api/donasi/status?id=:id</code>
+              <code className="font-mono text-sm font-bold text-slate-900">/payments/:trxid/status</code>
             </div>
             <span className="text-xs text-slate-500">Auto-check Verifikasi Mutasi</span>
           </div>
@@ -203,15 +203,19 @@ $result = json_decode($response->getBody(), true);
 $paymentUrl = $result['data']['payment_url'];
 header("Location: " . $paymentUrl);`;
 
-const codeStatusCurl = `curl -X GET "https://pay.sisforhub.web.id/api/donasi/status?id=pay_123456"
+const codeStatusCurl = `curl -X GET "https://pay.sisforhub.web.id/payments/trx_123456/status"
 
 # Response Lunas (200 OK):
 {
   "success": true,
   "paid": true,
-  "donation": {
-    "id": "pay_123456",
-    "amount": 10005,
+  "data": {
+    "id": "trx_123456",
+    "status": "paid",
+    "base_amount": 10000,
+    "fee": 500,
+    "unique_code": 12,
+    "amount": 10512,
     "issuer": "Gopay",
     "transaction_id": "108986732659845433"
   }

@@ -15,6 +15,7 @@ export async function POST(req) {
 
     const body = await req.json();
     const rawAmount = parseInt(body.amount, 10);
+    const fee = Math.max(0, parseInt(body.fee, 10) || 0);
     const customerName = (body.customer_name || body.donor_name || 'Pelanggan').trim().slice(0, 50);
     const note = (body.note || body.message || '').trim().slice(0, 200);
     const validMinutes = parseInt(body.valid_minutes, 10) || 5; // Default 5 minutes
@@ -32,8 +33,9 @@ export async function POST(req) {
     const expiresAt = now + expireSec;
 
     // Unique Code calculation
+    const subtotal = rawAmount + fee;
     let uniqueCode = 0;
-    let finalAmount = rawAmount;
+    let finalAmount = subtotal;
     const isUniqueCodeOn = getSetting('unique_code_enabled', '1') === '1';
     const maxCode = parseInt(getSetting('unique_code_max', '99'), 10) || 99;
 
@@ -43,11 +45,11 @@ export async function POST(req) {
         .all(now - expireSec)
         .map((r) => r.amount);
 
-      if (activeAmounts.includes(finalAmount)) {
+      if (activeAmounts.includes(subtotal)) {
         for (let i = 1; i <= maxCode; i++) {
-          if (!activeAmounts.includes(rawAmount + i)) {
+          if (!activeAmounts.includes(subtotal + i)) {
             uniqueCode = i;
-            finalAmount = rawAmount + uniqueCode;
+            finalAmount = subtotal + uniqueCode;
             break;
           }
         }
@@ -69,9 +71,9 @@ export async function POST(req) {
     const paymentId = crypto.randomBytes(4).toString('hex');
 
     db.prepare(`
-      INSERT INTO donations (id, donor_name, message, base_amount, unique_code, amount, qris_string, status, created_at, expires_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)
-    `).run(paymentId, customerName, note, rawAmount, uniqueCode, finalAmount, dynamicQR, now, expiresAt);
+      INSERT INTO donations (id, donor_name, message, base_amount, fee, unique_code, amount, qris_string, status, created_at, expires_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)
+    `).run(paymentId, customerName, note, rawAmount, fee, uniqueCode, finalAmount, dynamicQR, now, expiresAt);
 
     const origin = req.headers.get('origin') || 'https://pay.sisforhub.web.id';
     const paymentUrl = `${origin}/payin/${paymentId}`;
@@ -84,6 +86,7 @@ export async function POST(req) {
         customer_name: customerName,
         note,
         base_amount: rawAmount,
+        fee,
         unique_code: uniqueCode,
         amount: finalAmount,
         qr_image: qrImage,

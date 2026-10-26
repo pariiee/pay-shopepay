@@ -13,6 +13,20 @@ export async function GET(req) {
     }
 
     const db = getDb();
+    const now = Math.floor(Date.now() / 1000);
+
+    // Auto-update pending transactions that have expired
+    try {
+      db.prepare(`
+        UPDATE donations 
+        SET status = 'expired' 
+        WHERE status = 'pending' 
+          AND (
+            (expires_at IS NOT NULL AND expires_at < ?)
+            OR (expires_at IS NULL AND created_at < ? - 1200)
+          )
+      `).run(now, now);
+    } catch (_) {}
     
     // Overall Stats
     const stats = db.prepare(`
@@ -20,6 +34,7 @@ export async function GET(req) {
         COUNT(*) as total_tx,
         SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END) as total_paid,
         SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as total_pending,
+        SUM(CASE WHEN status = 'expired' THEN 1 ELSE 0 END) as total_expired,
         SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as total_cancelled,
         COALESCE(SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END), 0) as total_volume,
         COALESCE(SUM(CASE WHEN status = 'paid' THEN unique_code ELSE 0 END), 0) as total_unique_fees
@@ -29,8 +44,8 @@ export async function GET(req) {
     // Recent 50 transactions
     const transactions = db.prepare(`
       SELECT 
-        id, donor_name, message, base_amount, unique_code, amount, 
-        status, issuer, transaction_id, created_at, paid_at
+        id, donor_name, message, base_amount, fee, unique_code, amount, 
+        status, issuer, transaction_id, created_at, expires_at, paid_at
       FROM donations
       ORDER BY created_at DESC
       LIMIT 50

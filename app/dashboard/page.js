@@ -47,6 +47,12 @@ function StatusPill({ status }) {
         <Clock className="h-3 w-3" /> Pending
       </span>
     );
+  if (status === 'expired')
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-500">
+        <Clock className="h-3 w-3 text-slate-400" /> Expired
+      </span>
+    );
   return (
     <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-1 text-[11px] font-semibold text-rose-600">
       <XCircle className="h-3 w-3" /> Batal
@@ -274,9 +280,9 @@ export default function DashboardPage() {
         <nav className="hidden items-center gap-1 rounded-full bg-white p-1 text-xs font-semibold md:flex">
           <Link href="/dashboard" className="rounded-full bg-slate-900 px-3.5 py-1.5 text-white">Dashboard</Link>
           <Link href="/donasi" target="_blank" className="rounded-full px-3 py-1.5 text-slate-600 transition hover:text-slate-900">Link Statis</Link>
-          <Link href="/dashboard/transactions" className="rounded-full px-3 py-1.5 text-slate-600 transition hover:text-slate-900">Transaksi</Link>
-          <Link href="/dashboard/api-keys" className="rounded-full px-3 py-1.5 text-slate-600 transition hover:text-slate-900">API Key</Link>
-          <Link href="/dashboard/settings" className="rounded-full px-3 py-1.5 text-slate-600 transition hover:text-slate-900">Settings</Link>
+          <Link href="/transactions" className="rounded-full px-3 py-1.5 text-slate-600 transition hover:text-slate-900">Transaksi</Link>
+          <Link href="/api-keys" className="rounded-full px-3 py-1.5 text-slate-600 transition hover:text-slate-900">API Key</Link>
+          <Link href="/settings" className="rounded-full px-3 py-1.5 text-slate-600 transition hover:text-slate-900">Settings</Link>
           <Link href="/docs" className="rounded-full px-3 py-1.5 text-slate-600 transition hover:text-slate-900">Docs</Link>
         </nav>
 
@@ -317,7 +323,7 @@ export default function DashboardPage() {
             </p>
           </Link>
 
-          <Link href="/dashboard/transactions" className={`${card} group hover:border-slate-300 border border-transparent transition`}>
+          <Link href="/transactions" className={`${card} group hover:border-slate-300 border border-transparent transition`}>
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-bold text-slate-900">Transactions</span>
               <div className="h-8 w-8 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center group-hover:scale-105 transition">
@@ -329,7 +335,7 @@ export default function DashboardPage() {
             </p>
           </Link>
 
-          <Link href="/dashboard/api-keys" className={`${card} group hover:border-slate-300 border border-transparent transition`}>
+          <Link href="/api-keys" className={`${card} group hover:border-slate-300 border border-transparent transition`}>
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-bold text-slate-900">API Key</span>
               <div className="h-8 w-8 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center group-hover:scale-105 transition">
@@ -456,7 +462,7 @@ export default function DashboardPage() {
               <p className="mt-0.5 text-xs text-slate-500">Semua mutasi yang masuk ke database gateway.</p>
             </div>
             <div className="flex items-center gap-1 rounded-full bg-slate-100 p-1 text-xs">
-              {[['all', 'Semua'], ['paid', 'Sukses'], ['pending', 'Pending'], ['cancelled', 'Batal']].map(([k, label]) => (
+              {[['all', 'Semua'], ['paid', 'Sukses'], ['pending', 'Pending'], ['expired', 'Expired'], ['cancelled', 'Batal']].map(([k, label]) => (
                 <button
                   key={k}
                   onClick={() => setFilter(k)}

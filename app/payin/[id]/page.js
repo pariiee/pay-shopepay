@@ -97,7 +97,7 @@ export default function InvoicePage({ params }) {
     const checkStatus = async () => {
       setChecking(true);
       try {
-        const res = await fetch(`/api/donasi/status?id=${id}`);
+        const res = await fetch(`/payments/${id}/status`);
         const data = await res.json();
         if (data.success && data.paid) {
           setInvoice((prev) => ({
@@ -331,6 +331,13 @@ export default function InvoicePage({ params }) {
               <span>Nominal Tagihan</span>
               <span>Rp {formatRupiah(invoice.base_amount)}</span>
             </div>
+
+            {invoice.fee > 0 && (
+              <div className="flex justify-between text-slate-600">
+                <span>Biaya Layanan (Fee)</span>
+                <span className="font-semibold text-slate-900">+Rp {formatRupiah(invoice.fee)}</span>
+              </div>
+            )}
 
             {invoice.unique_code > 0 && (
               <div className="flex justify-between text-slate-600">

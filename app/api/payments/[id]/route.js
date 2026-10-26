@@ -30,6 +30,7 @@ export async function GET(req, { params }) {
         customer_name: row.donor_name,
         note: row.message,
         base_amount: row.base_amount,
+        fee: row.fee || 0,
         unique_code: row.unique_code,
         amount: row.amount,
         status: isExpired && row.status === 'pending' ? 'expired' : row.status,
