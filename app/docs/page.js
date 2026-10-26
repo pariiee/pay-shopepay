@@ -463,6 +463,101 @@ export default function DocsPage() {
             </div>
           )}
         </div>
+
+        {/* Webhook Category Header */}
+        <div className="flex items-center justify-between border-b border-slate-200 pb-4 pt-6">
+          <div>
+            <h2 className="text-2xl font-extrabold tracking-tight text-slate-900">Webhooks</h2>
+            <p className="mt-1 text-xs sm:text-sm text-slate-500">
+              Notifikasi HTTP POST otomatis ke server Anda saat transaksi dibayar atau expired.
+            </p>
+          </div>
+          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600 border border-slate-200">
+            HMAC-SHA256
+          </span>
+        </div>
+
+        {/* Webhook Signature Verification Card */}
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition">
+          <div 
+            onClick={() => toggleEndpoint('webhook_verify')}
+            className="flex cursor-pointer items-center justify-between px-5 py-4 hover:bg-slate-50/80 transition"
+          >
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="rounded-md bg-purple-500/10 px-2.5 py-1 font-mono text-xs font-bold text-purple-700 border border-purple-500/20">
+                SECURITY
+              </span>
+              <code className="font-mono text-sm font-bold text-slate-900">X-Webhook-Signature</code>
+              <span className="text-sm font-medium text-slate-600 hidden sm:inline">•</span>
+              <span className="text-sm font-semibold text-slate-700">Verify webhook signatures</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {openEndpoint === 'webhook_verify' ? (
+                <ChevronDown className="h-4 w-4 text-slate-400" />
+              ) : (
+                <ChevronRight className="h-4 w-4 text-slate-400" />
+              )}
+            </div>
+          </div>
+
+          {openEndpoint === 'webhook_verify' && (
+            <div className="border-t border-slate-100 p-5 sm:p-6 space-y-5 text-sm">
+              <p className="text-slate-600 leading-relaxed text-xs sm:text-sm">
+                Setiap pengiriman webhook menyertakan header <code>X-Webhook-Signature</code> — yaitu HMAC-SHA256 dari body request mentah menggunakan <code>API Key</code> Anda sebagai secret key. Hitung signature di server Anda dan tolak request jika tidak cocok.
+              </p>
+
+              {/* Node.js verification example */}
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Contoh Verifikasi (Node.js Express)</h4>
+                <div className="relative rounded-xl bg-slate-950 p-4 font-mono text-xs text-slate-200">
+                  <pre className="text-slate-300">
+{`const crypto = require('crypto');
+const express = require('express');
+const app = express();
+
+const SECRET = 'YOUR_API_KEY'; // Kunci API Anda
+
+app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
+  const received = req.headers['x-webhook-signature'];
+  const expected = crypto.createHmac('sha256', SECRET).update(req.body).digest('hex');
+
+  if (received !== expected) {
+    return res.status(401).json({ error: 'invalid signature' });
+  }
+
+  const payload = JSON.parse(req.body.toString());
+  console.log('Webhook verified:', payload.event, payload.data);
+  res.sendStatus(200);
+});`}
+                  </pre>
+                </div>
+              </div>
+
+              {/* PHP verification example */}
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Contoh Verifikasi (PHP / Laravel)</h4>
+                <div className="relative rounded-xl bg-slate-950 p-4 font-mono text-xs text-slate-200">
+                  <pre className="text-slate-300">
+{`$rawBody = file_get_contents('php://input');
+$signature = $_SERVER['HTTP_X_WEBHOOK_SIGNATURE'] ?? '';
+$secret = 'YOUR_API_KEY';
+
+$expected = hash_hmac('sha256', $rawBody, $secret);
+
+if (!hash_equals($expected, $signature)) {
+    http_response_code(401);
+    exit('Invalid signature');
+}
+
+$data = json_decode($rawBody, true);
+// Proses event: $data['event'] & $data['data']`}
+                  </pre>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </main>
     </div>
   );
