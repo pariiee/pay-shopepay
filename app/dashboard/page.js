@@ -5,7 +5,7 @@ import Link from 'next/link';
 import {
   ArrowLeft, RotateCw, CheckCircle2, Clock, XCircle, Wallet,
   AlertTriangle, ShieldCheck, QrCode, LogOut, Copy, Check, TrendingUp,
-  LayoutDashboard, Receipt,
+  LayoutDashboard, Receipt, PlusCircle, Link2, KeyRound, Settings, BookOpen
 } from 'lucide-react';
 
 const DAY = 86400;
@@ -241,9 +241,14 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <nav className="hidden items-center gap-1 rounded-full bg-white p-1 text-sm font-medium md:flex">
-          <span className="rounded-full bg-slate-900 px-4 py-2 text-white">Dashboard</span>
-          <a href="#riwayat" className="rounded-full px-4 py-2 text-slate-500 transition hover:text-slate-900">Transaksi</a>
+        <nav className="hidden items-center gap-1 rounded-full bg-white p-1 text-xs font-semibold md:flex">
+          <Link href="/dashboard" className="rounded-full bg-slate-900 px-3.5 py-1.5 text-white">Dashboard</Link>
+          <Link href="/dashboard/create-payment" className="rounded-full px-3 py-1.5 text-slate-600 transition hover:text-slate-900">Buat Tagihan</Link>
+          <Link href="/pay" className="rounded-full px-3 py-1.5 text-slate-600 transition hover:text-slate-900">Link Statis</Link>
+          <Link href="/dashboard/transactions" className="rounded-full px-3 py-1.5 text-slate-600 transition hover:text-slate-900">Transaksi</Link>
+          <Link href="/dashboard/api-keys" className="rounded-full px-3 py-1.5 text-slate-600 transition hover:text-slate-900">API Key</Link>
+          <Link href="/dashboard/settings" className="rounded-full px-3 py-1.5 text-slate-600 transition hover:text-slate-900">Settings</Link>
+          <Link href="/docs" className="rounded-full px-3 py-1.5 text-slate-600 transition hover:text-slate-900">Docs</Link>
         </nav>
 
         <div className="flex items-center gap-2">
@@ -267,6 +272,57 @@ export default function DashboardPage() {
         <div className="px-1 pb-1">
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Overview</h1>
           <p className="mt-1 text-sm text-slate-500">Pantau performa pembayaran QRIS kamu.</p>
+        </div>
+
+        {/* Quick Actions Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <Link href="/dashboard/create-payment" className={`${card} group hover:border-slate-300 border border-transparent transition`}>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-bold text-slate-900">Create Payment</span>
+              <div className="h-8 w-8 rounded-full bg-slate-900 text-white flex items-center justify-center group-hover:scale-105 transition" style={{ color: LIME }}>
+                <PlusCircle className="h-4 w-4" />
+              </div>
+            </div>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Generate an instant payment link + QRIS. Valid for 5 minutes.
+            </p>
+          </Link>
+
+          <Link href="/pay" className={`${card} group hover:border-slate-300 border border-transparent transition`}>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-bold text-slate-900">Static payment link</span>
+              <div className="h-8 w-8 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center group-hover:scale-105 transition">
+                <Link2 className="h-4 w-4" />
+              </div>
+            </div>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              A permanent link that never expires. Anyone can enter any amount and pay via QRIS.
+            </p>
+          </Link>
+
+          <Link href="/dashboard/api-keys" className={`${card} group hover:border-slate-300 border border-transparent transition`}>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-bold text-slate-900">API Key</span>
+              <div className="h-8 w-8 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center group-hover:scale-105 transition">
+                <KeyRound className="h-4 w-4" />
+              </div>
+            </div>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              This key is sent in the X-API-Key on every request.
+            </p>
+          </Link>
+
+          <Link href="/dashboard/settings" className={`${card} group hover:border-slate-300 border border-transparent transition`}>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-bold text-slate-900">Settings</span>
+              <div className="h-8 w-8 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center group-hover:scale-105 transition">
+                <Settings className="h-4 w-4" />
+              </div>
+            </div>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Store profile, atur unique code, and account.
+            </p>
+          </Link>
         </div>
 
         {/* Ringkasan */}
