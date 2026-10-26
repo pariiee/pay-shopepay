@@ -5,11 +5,13 @@ import Link from 'next/link';
 import { 
   ArrowLeft, Settings, Save, RotateCw, CheckCircle2, 
   Store, Hash, KeyRound, AlertCircle, ShieldCheck, 
-  QrCode, Plus, Trash2, Palette, Image as ImageIcon, X, UploadCloud
+  QrCode, Plus, Trash2, Palette, Image as ImageIcon, X, UploadCloud,
+  Eye, EyeOff, Copy, Check, Sparkles
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 
 const LIME = '#d8f53b';
+const PREFIX = 'al-';
 
 const SOLID_COLORS = [
   { label: 'Hitam Pekat', hex: '#0f172a' },
@@ -22,6 +24,9 @@ export default function SettingsPage() {
   const [uniqueEnabled, setUniqueEnabled] = useState(true);
   const [uniqueMax, setUniqueMax] = useState(99);
   const [apiKey, setApiKey] = useState('');
+  const [suffix, setSuffix] = useState('');
+  const [showKey, setShowKey] = useState(false);
+  const [copiedKey, setCopiedKey] = useState(false);
   const [webhookUrls, setWebhookUrls] = useState(['']);
 
   // Modular QR Customizer
@@ -84,7 +89,9 @@ export default function SettingsPage() {
         setStoreName(json.data.store_name || 'Ngecode Aje');
         setUniqueEnabled(json.data.unique_code_enabled ?? true);
         setUniqueMax(json.data.unique_code_max || 99);
-        setApiKey(json.data.api_key || '');
+        const key = json.data.api_key || '';
+        setApiKey(key);
+        setSuffix(key.startsWith(PREFIX) ? key.slice(PREFIX.length) : key);
 
         let urls = json.data.webhook_urls || [];
         if (!urls.length && json.data.webhook_url) {
@@ -146,6 +153,24 @@ export default function SettingsPage() {
       setQrLogo(ev.target?.result || '');
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleCopyApiKey = async () => {
+    try {
+      await navigator.clipboard.writeText(apiKey);
+      setCopiedKey(true);
+      setTimeout(() => setCopiedKey(false), 2000);
+    } catch (_) {}
+  };
+
+  const handleGenerateRandom = () => {
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    let res = '';
+    for (let i = 0; i < 10; i++) {
+      res += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setSuffix(res);
+    setApiKey(`${PREFIX}${res}`);
   };
 
   const handleSave = async (e) => {
@@ -762,20 +787,92 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              {/* API Key */}
-              <div className="space-y-1.5 pt-3 border-t border-slate-100">
-                <label className="text-xs font-bold text-slate-900 flex items-center gap-2">
+              {/* API Key Gateway Card */}
+              <div className="space-y-4 pt-4 border-t border-slate-100">
+                <div className="flex items-center gap-2">
                   <KeyRound className="h-4 w-4 text-slate-500" />
-                  <span>Kunci API Gateway (X-API-Key)</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-mono focus:outline-none focus:border-slate-900 transition"
-                />
-                <p className="text-[11px] text-slate-400">Header wajib pada setiap pemanggilan endpoint REST API.</p>
+                  <label className="text-xs font-bold text-slate-900">API Key Gateway</label>
+                </div>
+                <p className="text-[11px] text-slate-400">
+                  Kunci rahasia untuk memproteksi panggilan REST API (Header X-API-Key).
+                </p>
+
+                {/* Active Token Box */}
+                <div className="rounded-2xl bg-slate-900 p-4 text-white space-y-2">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Active Token</span>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="font-mono text-sm tracking-wide overflow-x-auto select-all">
+                      {loading ? 'Memuat...' : showKey ? apiKey : `${PREFIX}${'•'.repeat(Math.max(8, (apiKey || '').length - 3))}`}
+                    </span>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setShowKey(!showKey)}
+                        className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition"
+                        title={showKey ? 'Sembunyikan' : 'Tampilkan'}
+                      >
+                        {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleCopyApiKey}
+                        className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition"
+                      >
+                        {copiedKey ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
+                        <span>{copiedKey ? 'Tersalin' : 'Salin'}</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Custom Token Belakang */}
+                <div className="pt-2 space-y-2">
+                  <h3 className="text-xs font-bold text-slate-900">Custom Token Belakang</h3>
+                  <p className="text-[11px] text-slate-500">
+                    Prefix <code className="bg-slate-100 px-1.5 py-0.5 rounded font-mono font-bold text-slate-800">{PREFIX}</code> terkunci permanen. Kamu bebas mengganti token belakangnya:
+                  </p>
+
+                  <div className="flex items-center gap-1.5">
+                    {/* Locked Prefix */}
+                    <span className="px-3.5 py-2.5 rounded-xl bg-slate-900 text-white font-mono font-bold text-sm shrink-0 border border-slate-800 select-none">
+                      {PREFIX}
+                    </span>
+
+                    {/* Editable Suffix */}
+                    <input
+                      type="text"
+                      required
+                      placeholder="ez7dpzxdh6"
+                      value={suffix}
+                      onChange={(e) => {
+                        const clean = e.target.value.replace(/[^a-zA-Z0-9_-]/g, '');
+                        setSuffix(clean);
+                        setApiKey(`${PREFIX}${clean}`);
+                      }}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono text-sm focus:outline-none focus:border-slate-900 transition"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={handleGenerateRandom}
+                      className="px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold shrink-0 transition"
+                      title="Generate Token Acak"
+                    >
+                      <Sparkles className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Cara Penggunaan di Header HTTP */}
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 text-xs space-y-2">
+                  <div className="flex items-center gap-2 font-bold text-slate-900">
+                    <ShieldCheck className="h-4 w-4 text-emerald-600" />
+                    <span>Cara Penggunaan di Header HTTP:</span>
+                  </div>
+                  <code className="block p-2.5 rounded-xl bg-white border border-slate-200 font-mono text-[11px] text-slate-800 overflow-x-auto">
+                    X-API-Key: {apiKey || `${PREFIX}YOUR_TOKEN`}
+                  </code>
+                </div>
               </div>
 
               {/* Submit */}

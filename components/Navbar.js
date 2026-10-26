@@ -19,7 +19,6 @@ export default function Navbar({ active = '', storeName = 'Ngecode Aje', tokenOk
   const navItems = [
     { href: '/dashboard', label: 'Dashboard', key: 'dashboard' },
     { href: '/riwayat', label: 'Riwayat', key: 'riwayat' },
-    { href: '/api-keys', label: 'API Key', key: 'api-keys' },
     { href: '/settings', label: 'Settings', key: 'settings' },
     { href: '/docs', label: 'Docs', key: 'docs' },
   ];
@@ -117,7 +116,7 @@ export default function Navbar({ active = '', storeName = 'Ngecode Aje', tokenOk
           </Link>
           <Link
             href="/riwayat"
-            className={`flex min-w-[54px] flex-col items-center gap-0.5 rounded-full px-2.5 py-1.5 text-[10px] font-semibold transition ${
+            className={`flex min-w-[62px] flex-col items-center gap-0.5 rounded-full px-3 py-1.5 text-[10px] font-semibold transition ${
               active === 'riwayat' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-900'
             }`}
           >
@@ -125,17 +124,8 @@ export default function Navbar({ active = '', storeName = 'Ngecode Aje', tokenOk
             <span>Riwayat</span>
           </Link>
           <Link
-            href="/api-keys"
-            className={`flex min-w-[54px] flex-col items-center gap-0.5 rounded-full px-2.5 py-1.5 text-[10px] font-semibold transition ${
-              active === 'api-keys' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-900'
-            }`}
-          >
-            <KeyRound className="h-4 w-4" style={active === 'api-keys' ? { color: LIME } : undefined} />
-            <span>API</span>
-          </Link>
-          <Link
             href="/settings"
-            className={`flex min-w-[54px] flex-col items-center gap-0.5 rounded-full px-2.5 py-1.5 text-[10px] font-semibold transition ${
+            className={`flex min-w-[62px] flex-col items-center gap-0.5 rounded-full px-3 py-1.5 text-[10px] font-semibold transition ${
               active === 'settings' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-900'
             }`}
           >
@@ -144,7 +134,7 @@ export default function Navbar({ active = '', storeName = 'Ngecode Aje', tokenOk
           </Link>
           <Link
             href="/docs"
-            className={`flex min-w-[54px] flex-col items-center gap-0.5 rounded-full px-2.5 py-1.5 text-[10px] font-semibold transition ${
+            className={`flex min-w-[62px] flex-col items-center gap-0.5 rounded-full px-3 py-1.5 text-[10px] font-semibold transition ${
               active === 'docs' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-900'
             }`}
           >
