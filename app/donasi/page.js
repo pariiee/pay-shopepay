@@ -66,7 +66,7 @@ export default function DonasiPage() {
         const res = await fetch(`/payments/${paymentData.id}/status`);
         const data = await res.json();
         if (data.success && data.paid) {
-          setPaidResult(data.donation);
+          setPaidResult(data.data || data.donation);
           fetchRecent();
           return;
         }
@@ -132,7 +132,7 @@ export default function DonasiPage() {
       const res = await fetch(`/payments/${paymentData.id}/status`);
       const data = await res.json();
       if (data.success && data.paid) {
-        setPaidResult(data.donation);
+        setPaidResult(data.data || data.donation);
         fetchRecent();
       }
     } catch (err) {

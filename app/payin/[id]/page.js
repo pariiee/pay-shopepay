@@ -100,12 +100,13 @@ export default function InvoicePage({ params }) {
         const res = await fetch(`/payments/${id}/status`);
         const data = await res.json();
         if (data.success && data.paid) {
+          const tx = data.data || data.donation || {};
           setInvoice((prev) => ({
             ...prev,
             status: 'paid',
-            issuer: data.donation.issuer,
-            transaction_id: data.donation.transaction_id,
-            paid_at: data.donation.paid_at
+            issuer: tx.issuer || prev?.issuer || 'QRIS',
+            transaction_id: tx.transaction_id || prev?.transaction_id,
+            paid_at: tx.paid_at || Math.floor(Date.now() / 1000)
           }));
         }
       } catch (err) {
