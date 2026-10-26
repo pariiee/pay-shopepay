@@ -17,12 +17,14 @@ export async function GET(req, { params }) {
     const qrEyeBall = getSetting('qr_eye_ball', 'square');
     const qrColor = getSetting('qr_color', '#0f172a');
     const qrLogo = getSetting('qr_logo', null);
+    const qrLogoBg = getSetting('qr_logo_bg', 'circle');
     const qrImage = generateStyledQrSvg(row.qris_string, { 
       body: qrBody, 
       eyeFrame: qrEyeFrame, 
       eyeBall: qrEyeBall, 
       color: qrColor, 
       logo: qrLogo,
+      logoBg: qrLogoBg,
       size: 380 
     });
 

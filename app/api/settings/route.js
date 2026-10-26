@@ -33,7 +33,8 @@ export async function GET() {
         qr_eye_frame: getSetting('qr_eye_frame', 'square'),
         qr_eye_ball: getSetting('qr_eye_ball', 'square'),
         qr_color: getSetting('qr_color', '#0f172a'),
-        qr_logo: getSetting('qr_logo', '')
+        qr_logo: getSetting('qr_logo', ''),
+        qr_logo_bg: getSetting('qr_logo_bg', 'circle')
       }
     });
 }
@@ -63,6 +64,7 @@ export async function POST(req) {
     if (body.qr_eye_ball !== undefined) setSetting('qr_eye_ball', body.qr_eye_ball);
     if (body.qr_color !== undefined) setSetting('qr_color', body.qr_color);
     if (body.qr_logo !== undefined) setSetting('qr_logo', body.qr_logo);
+    if (body.qr_logo_bg !== undefined) setSetting('qr_logo_bg', body.qr_logo_bg);
 
     return NextResponse.json({ success: true, message: 'Pengaturan berhasil disimpan' });
   } catch (err) {

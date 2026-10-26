@@ -11,8 +11,9 @@ export async function GET(req) {
     const eyeBall = searchParams.get('eyeBall') || 'square';
     const color = searchParams.get('color') || '#0f172a';
     const logo = searchParams.get('logo') || null;
+    const logoBg = searchParams.get('logoBg') || 'circle';
 
-    const qrImage = generateStyledQrSvg(DUMMY_QR, { body, eyeFrame, eyeBall, color, logo, size: 280 });
+    const qrImage = generateStyledQrSvg(DUMMY_QR, { body, eyeFrame, eyeBall, color, logo, logoBg, size: 280 });
     return NextResponse.json({ success: true, qr_image: qrImage });
   } catch (err) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
@@ -27,10 +28,11 @@ export async function POST(req) {
       eyeFrame = 'square',
       eyeBall = 'square',
       color = '#0f172a',
-      logo = null
+      logo = null,
+      logoBg = 'circle'
     } = payload;
 
-    const qrImage = generateStyledQrSvg(DUMMY_QR, { body, eyeFrame, eyeBall, color, logo, size: 280 });
+    const qrImage = generateStyledQrSvg(DUMMY_QR, { body, eyeFrame, eyeBall, color, logo, logoBg, size: 280 });
     return NextResponse.json({ success: true, qr_image: qrImage });
   } catch (err) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });

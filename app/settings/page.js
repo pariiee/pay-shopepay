@@ -31,6 +31,7 @@ export default function SettingsPage() {
   const [qrColor, setQrColor] = useState('#0f172a');
   const [customColor, setCustomColor] = useState('#2563eb');
   const [qrLogo, setQrLogo] = useState('');
+  const [qrLogoBg, setQrLogoBg] = useState('circle');
 
   const [previewQr, setPreviewQr] = useState('');
   const [previewLoading, setPreviewLoading] = useState(false);
@@ -55,7 +56,8 @@ export default function SettingsPage() {
             eyeFrame: qrEyeFrame,
             eyeBall: qrEyeBall,
             color: qrColor,
-            logo: qrLogo || null
+            logo: qrLogo || null,
+            logoBg: qrLogoBg
           })
         });
         const json = await res.json();
@@ -67,7 +69,7 @@ export default function SettingsPage() {
     };
     const t = setTimeout(fetchPreview, 100);
     return () => { active = false; clearTimeout(t); };
-  }, [qrBody, qrEyeFrame, qrEyeBall, qrColor, qrLogo]);
+  }, [qrBody, qrEyeFrame, qrEyeBall, qrColor, qrLogo, qrLogoBg]);
 
   const fetchSettings = async () => {
     setLoading(true);
@@ -95,6 +97,7 @@ export default function SettingsPage() {
         if (json.data.qr_eye_frame) setQrEyeFrame(json.data.qr_eye_frame);
         if (json.data.qr_eye_ball) setQrEyeBall(json.data.qr_eye_ball);
         if (json.data.qr_logo) setQrLogo(json.data.qr_logo);
+        if (json.data.qr_logo_bg) setQrLogoBg(json.data.qr_logo_bg);
 
         if (json.data.qr_color) {
           setQrColor(json.data.qr_color);
@@ -168,7 +171,8 @@ export default function SettingsPage() {
           qr_eye_frame: qrEyeFrame,
           qr_eye_ball: qrEyeBall,
           qr_color: qrColor,
-          qr_logo: qrLogo
+          qr_logo: qrLogo,
+          qr_logo_bg: qrLogoBg
         })
       });
 
@@ -630,8 +634,38 @@ export default function SettingsPage() {
                       </div>
                     )}
                   </div>
+
+                  {qrLogo && (
+                    <div className="pt-2 flex items-center gap-2">
+                      <span className="text-[11px] font-semibold text-slate-600">Bentuk Background:</span>
+                      <div className="inline-flex rounded-lg bg-slate-100 p-0.5 text-[11px] font-medium">
+                        <button
+                          type="button"
+                          onClick={() => setQrLogoBg('circle')}
+                          className={`rounded-md px-2.5 py-1 transition ${qrLogoBg === 'circle' ? 'bg-white font-bold text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                        >
+                          Lingkaran (Bulat Halus)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setQrLogoBg('none')}
+                          className={`rounded-md px-2.5 py-1 transition ${qrLogoBg === 'none' ? 'bg-white font-bold text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                        >
+                          Transparan (Tanpa Box)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setQrLogoBg('square')}
+                          className={`rounded-md px-2.5 py-1 transition ${qrLogoBg === 'square' ? 'bg-white font-bold text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                        >
+                          Kotak
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
                   <p className="text-[10px] text-slate-400">
-                    Otomatis dipasang di tengah QR dengan pelindung putih. Error Correction level H (30%) diaktifkan otomatis agar scanner bank/e-wallet tetap membaca cepat.
+                    Logo diletakkan di tengah dengan jarak clearance otomatis. Error Correction level H (30%) diaktifkan otomatis agar scanner bank/e-wallet tetap membaca cepat.
                   </p>
                 </div>
 
