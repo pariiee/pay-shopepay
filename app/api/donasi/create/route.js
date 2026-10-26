@@ -57,24 +57,28 @@ export async function POST(req) {
       color: { dark: '#0f172a', light: '#ffffff' }
     });
 
-    const donationId = 'don_' + crypto.randomBytes(6).toString('hex');
+    const donationId = crypto.randomBytes(4).toString('hex');
+    const expiresAt = now + 300; // 5 minutes
 
     db.prepare(`
-      INSERT INTO donations (id, donor_name, message, base_amount, unique_code, amount, qris_string, status, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?)
-    `).run(donationId, donorName, message, rawAmount, uniqueCode, finalAmount, dynamicQR, now);
+      INSERT INTO donations (id, donor_name, message, base_amount, unique_code, amount, qris_string, status, created_at, expires_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)
+    `).run(donationId, donorName, message, rawAmount, uniqueCode, finalAmount, dynamicQR, now, expiresAt);
+
+    const origin = req.headers.get('origin') || 'https://pay.sisforhub.web.id';
 
     return NextResponse.json({
       success: true,
       data: {
         id: donationId,
+        invoice_url: `${origin}/payin/${donationId}`,
         donor_name: donorName,
         message,
         base_amount: rawAmount,
         unique_code: uniqueCode,
         amount: finalAmount,
         qr_image: qrImage,
-        expires_at: new Date((now + 900) * 1000).toISOString()
+        expires_at: new Date(expiresAt * 1000).toISOString()
       }
     });
   } catch (err) {

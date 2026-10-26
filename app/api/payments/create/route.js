@@ -59,7 +59,7 @@ export async function POST(req) {
       color: { dark: '#0f172a', light: '#ffffff' }
     });
 
-    const paymentId = 'pay_' + crypto.randomBytes(6).toString('hex');
+    const paymentId = crypto.randomBytes(4).toString('hex');
 
     db.prepare(`
       INSERT INTO donations (id, donor_name, message, base_amount, unique_code, amount, qris_string, status, created_at, expires_at)
@@ -67,7 +67,7 @@ export async function POST(req) {
     `).run(paymentId, customerName, note, rawAmount, uniqueCode, finalAmount, dynamicQR, now, expiresAt);
 
     const origin = req.headers.get('origin') || 'https://pay.sisforhub.web.id';
-    const paymentUrl = `${origin}/pay/${paymentId}`;
+    const paymentUrl = `${origin}/payin/${paymentId}`;
 
     return NextResponse.json({
       success: true,

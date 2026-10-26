@@ -243,7 +243,7 @@ export default function DashboardPage() {
 
         <nav className="hidden items-center gap-1 rounded-full bg-white p-1 text-xs font-semibold md:flex">
           <Link href="/dashboard" className="rounded-full bg-slate-900 px-3.5 py-1.5 text-white">Dashboard</Link>
-          <Link href="/link/4253472e" target="_blank" className="rounded-full px-3 py-1.5 text-slate-600 transition hover:text-slate-900">Link Statis</Link>
+          <Link href="/donasi" target="_blank" className="rounded-full px-3 py-1.5 text-slate-600 transition hover:text-slate-900">Link Statis</Link>
           <Link href="/dashboard/transactions" className="rounded-full px-3 py-1.5 text-slate-600 transition hover:text-slate-900">Transaksi</Link>
           <Link href="/dashboard/api-keys" className="rounded-full px-3 py-1.5 text-slate-600 transition hover:text-slate-900">API Key</Link>
           <Link href="/dashboard/settings" className="rounded-full px-3 py-1.5 text-slate-600 transition hover:text-slate-900">Settings</Link>
@@ -275,15 +275,15 @@ export default function DashboardPage() {
 
         {/* Quick Actions Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <Link href="/link/4253472e" target="_blank" className={`${card} group hover:border-slate-300 border border-transparent transition`}>
+          <Link href="/donasi" target="_blank" className={`${card} group hover:border-slate-300 border border-transparent transition`}>
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold text-slate-900">Static Payment Link</span>
+              <span className="text-xs font-bold text-slate-900">Link Statis (/donasi)</span>
               <div className="h-8 w-8 rounded-full bg-slate-900 text-white flex items-center justify-center group-hover:scale-105 transition" style={{ color: LIME }}>
                 <Link2 className="h-4 w-4" />
               </div>
             </div>
             <p className="text-xs text-slate-500 leading-relaxed">
-              /link/4253472e — Link permanen publik tanpa login.
+              Link permanen publik — masukkan nominal otomatis jadi invoice /payin/:id.
             </p>
           </Link>
 

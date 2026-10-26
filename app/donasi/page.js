@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { 
   Heart, ArrowLeft, QrCode, CheckCircle2, Clock, AlertCircle, 
@@ -12,6 +13,7 @@ const LIME = '#d8f53b';
 const card = 'rounded-[28px] bg-white p-6 sm:p-8 shadow-xl shadow-slate-900/5';
 
 export default function DonasiPage() {
+  const router = useRouter();
   const [donorName, setDonorName] = useState('');
   const [message, setMessage] = useState('');
   const [amount, setAmount] = useState(1000);
@@ -116,12 +118,9 @@ export default function DonasiPage() {
         throw new Error(json.error || 'Gagal membuat QRIS donasi');
       }
 
-      setPaymentData(json.data);
-      setCountdown(900);
-      setPollingCountdown(15);
+      router.push(`/payin/${json.data.id}`);
     } catch (err) {
       setError(err.message);
-    } finally {
       setLoading(false);
     }
   };
