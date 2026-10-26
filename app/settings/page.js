@@ -17,31 +17,6 @@ const SOLID_COLORS = [
   { label: 'Emerald Green', hex: '#059669' }
 ];
 
-const BODY_SHAPES = [
-  { id: 'square', label: 'Square', desc: 'Kotak standar' },
-  { id: 'dots', label: 'Dots / Circles', desc: 'Titik bulat modern' },
-  { id: 'rounded', label: 'Squircle', desc: 'Kotak melengkung' },
-  { id: 'diamond', label: 'Diamond', desc: 'Belah ketupat' },
-  { id: 'star', label: 'Star / Cross', desc: 'Bintang 4 sudut' },
-  { id: 'leaf', label: 'Leaf Pattern', desc: 'Sudut kelopak daun' }
-];
-
-const EYE_FRAME_SHAPES = [
-  { id: 'square', label: 'Square Box', desc: 'Bingkai kotak tegas' },
-  { id: 'rounded', label: 'Squircle Frame', desc: 'Bingkai sudut lengkung' },
-  { id: 'circle', label: 'Circular Ring', desc: 'Bingkai lingkaran penuh' },
-  { id: 'leaf', label: 'Leaf Contour', desc: 'Bingkai daun diagonal' },
-  { id: 'teardrop', label: 'Teardrop Frame', desc: 'Bingkai tetesan air' }
-];
-
-const EYE_BALL_SHAPES = [
-  { id: 'square', label: 'Solid Square', desc: 'Inti kotak padat' },
-  { id: 'circle', label: 'Solid Circle', desc: 'Inti titik bulat' },
-  { id: 'rounded', label: 'Rounded Core', desc: 'Inti kotak tumpul' },
-  { id: 'diamond', label: 'Diamond Core', desc: 'Inti belah ketupat' },
-  { id: 'leaf', label: 'Leaf Core', desc: 'Inti kelopak daun' }
-];
-
 export default function SettingsPage() {
   const [storeName, setStoreName] = useState('Ngecode Aje');
   const [uniqueEnabled, setUniqueEnabled] = useState(true);
@@ -90,7 +65,7 @@ export default function SettingsPage() {
         if (active) setPreviewLoading(false);
       }
     };
-    const t = setTimeout(fetchPreview, 120);
+    const t = setTimeout(fetchPreview, 100);
     return () => { active = false; clearTimeout(t); };
   }, [qrBody, qrEyeFrame, qrEyeBall, qrColor, qrLogo]);
 
@@ -208,6 +183,14 @@ export default function SettingsPage() {
     }
   };
 
+  // Helper tile classes
+  const tileBtn = (isActive) =>
+    `flex h-14 w-14 items-center justify-center rounded-2xl bg-white transition shadow-sm ${
+      isActive 
+        ? 'ring-2 ring-sky-500 border-2 border-sky-500 text-slate-900 bg-sky-50/50 scale-105' 
+        : 'border border-slate-200 text-slate-700 hover:border-slate-400 hover:bg-slate-50'
+    }`;
+
   return (
     <div className="min-h-screen bg-[#e9edf2] text-slate-900 flex flex-col justify-between">
       <Navbar active="settings" onRefresh={fetchSettings} loading={loading} />
@@ -220,7 +203,7 @@ export default function SettingsPage() {
             </div>
             <div>
               <h1 className="text-xl font-bold text-slate-900">Pengaturan Toko & Gateway</h1>
-              <p className="text-xs text-slate-500 mt-0.5">Atur profil toko, Webhook multi-URL, kustomisasi QRIS, logo, dan API key</p>
+              <p className="text-xs text-slate-500 mt-0.5">Atur profil merchant, Webhook multi-URL, style visual QRIS, logo, dan API key</p>
             </div>
           </div>
 
@@ -356,8 +339,8 @@ export default function SettingsPage() {
                 )}
               </div>
 
-              {/* KUSTOMISASI MODULAR DESIGN QRIS */}
-              <div className="space-y-5 pt-4 border-t border-slate-100">
+              {/* CUSTOM QR CODE DESIGNER (ICON TILES) */}
+              <div className="space-y-6 pt-4 border-t border-slate-100">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 text-white" style={{ color: LIME }}>
@@ -365,96 +348,252 @@ export default function SettingsPage() {
                     </div>
                     <div>
                       <h2 className="text-sm font-bold text-slate-900">Custom Desain QRIS</h2>
-                      <p className="text-[11px] text-slate-400">Atur pola modul, bentuk sudut luar/dalam, dan pasang logo</p>
+                      <p className="text-[11px] text-slate-400">Pilih icon bentuk modul, bingkai sudut, dan logo tengah</p>
                     </div>
                   </div>
                 </div>
 
                 {/* 1. Body Shape */}
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                    <span>1. Body Shape (Pola Modul Isi)</span>
+                  <label className="text-xs font-bold text-slate-700 block">
+                    Body Shape (Pola Modul)
                   </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {BODY_SHAPES.map((st) => (
-                      <button
-                        key={st.id}
-                        type="button"
-                        onClick={() => setQrBody(st.id)}
-                        className={`text-left p-2.5 rounded-2xl border transition ${
-                          qrBody === st.id 
-                            ? 'border-slate-900 bg-slate-900 text-white shadow-sm' 
-                            : 'border-slate-200 bg-slate-50 hover:bg-white text-slate-800'
-                        }`}
-                      >
-                        <div className="font-bold text-xs">{st.label}</div>
-                        <div className={`text-[10px] mt-0.5 ${qrBody === st.id ? 'text-slate-300' : 'text-slate-400'}`}>
-                          {st.desc}
-                        </div>
-                      </button>
-                    ))}
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    {/* Square */}
+                    <button
+                      type="button"
+                      title="Square (Kotak Standar)"
+                      onClick={() => setQrBody('square')}
+                      className={tileBtn(qrBody === 'square')}
+                    >
+                      <svg viewBox="0 0 24 24" className="w-7 h-7">
+                        <rect x="3" y="3" width="7.5" height="7.5" fill="currentColor" />
+                        <rect x="13.5" y="3" width="7.5" height="7.5" fill="currentColor" />
+                        <rect x="3" y="13.5" width="7.5" height="7.5" fill="currentColor" />
+                        <rect x="13.5" y="13.5" width="7.5" height="7.5" fill="currentColor" />
+                      </svg>
+                    </button>
+
+                    {/* Dots */}
+                    <button
+                      type="button"
+                      title="Dots (Titik Bulat)"
+                      onClick={() => setQrBody('dots')}
+                      className={tileBtn(qrBody === 'dots')}
+                    >
+                      <svg viewBox="0 0 24 24" className="w-7 h-7">
+                        <circle cx="6.5" cy="6.5" r="4" fill="currentColor" />
+                        <circle cx="17.5" cy="6.5" r="4" fill="currentColor" />
+                        <circle cx="6.5" cy="17.5" r="4" fill="currentColor" />
+                        <circle cx="17.5" cy="17.5" r="4" fill="currentColor" />
+                      </svg>
+                    </button>
+
+                    {/* Rounded Squircle */}
+                    <button
+                      type="button"
+                      title="Rounded (Kotak Tumpul)"
+                      onClick={() => setQrBody('rounded')}
+                      className={tileBtn(qrBody === 'rounded')}
+                    >
+                      <svg viewBox="0 0 24 24" className="w-7 h-7">
+                        <rect x="3" y="3" width="7.5" height="7.5" rx="2.5" fill="currentColor" />
+                        <rect x="13.5" y="3" width="7.5" height="7.5" rx="2.5" fill="currentColor" />
+                        <rect x="3" y="13.5" width="7.5" height="7.5" rx="2.5" fill="currentColor" />
+                        <rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2.5" fill="currentColor" />
+                      </svg>
+                    </button>
+
+                    {/* Diamond */}
+                    <button
+                      type="button"
+                      title="Diamond (Belah Ketupat)"
+                      onClick={() => setQrBody('diamond')}
+                      className={tileBtn(qrBody === 'diamond')}
+                    >
+                      <svg viewBox="0 0 24 24" className="w-7 h-7">
+                        <polygon points="6.75,2.5 11,6.75 6.75,11 2.5,6.75" fill="currentColor" />
+                        <polygon points="17.25,2.5 21.5,6.75 17.25,11 13,6.75" fill="currentColor" />
+                        <polygon points="6.75,13 11,17.25 6.75,21.5 2.5,17.25" fill="currentColor" />
+                        <polygon points="17.25,13 21.5,17.25 17.25,21.5 13,17.25" fill="currentColor" />
+                      </svg>
+                    </button>
+
+                    {/* Star */}
+                    <button
+                      type="button"
+                      title="Star (Bintang 4 Sisi)"
+                      onClick={() => setQrBody('star')}
+                      className={tileBtn(qrBody === 'star')}
+                    >
+                      <svg viewBox="0 0 24 24" className="w-7 h-7">
+                        <polygon points="6.5,2.5 8,5 10.5,6.5 8,8 6.5,10.5 5,8 2.5,6.5 5,5" fill="currentColor" />
+                        <polygon points="17.5,2.5 19,5 21.5,6.5 19,8 17.5,10.5 16,8 13.5,6.5 16,5" fill="currentColor" />
+                        <polygon points="6.5,13.5 8,16 10.5,17.5 8,19 6.5,21.5 5,19 2.5,17.5 5,16" fill="currentColor" />
+                        <polygon points="17.5,13.5 19,16 21.5,17.5 19,19 17.5,21.5 16,19 13.5,17.5 16,16" fill="currentColor" />
+                      </svg>
+                    </button>
+
+                    {/* Leaf */}
+                    <button
+                      type="button"
+                      title="Leaf (Sudut Daun)"
+                      onClick={() => setQrBody('leaf')}
+                      className={tileBtn(qrBody === 'leaf')}
+                    >
+                      <svg viewBox="0 0 24 24" className="w-7 h-7">
+                        <path d="M 6 3 H 11 V 8 A 3 3 0 0 1 8 11 H 3 V 6 A 3 3 0 0 1 6 3 Z" fill="currentColor" />
+                        <path d="M 16.5 3 H 21.5 V 8 A 3 3 0 0 1 18.5 11 H 13.5 V 6 A 3 3 0 0 1 16.5 3 Z" fill="currentColor" />
+                        <path d="M 6 13.5 H 11 V 18.5 A 3 3 0 0 1 8 21.5 H 3 V 16.5 A 3 3 0 0 1 6 13.5 Z" fill="currentColor" />
+                        <path d="M 16.5 13.5 H 21.5 V 18.5 A 3 3 0 0 1 18.5 21.5 H 13.5 V 16.5 A 3 3 0 0 1 16.5 13.5 Z" fill="currentColor" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
 
                 {/* 2. Eye Frame Shape */}
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                    <span>2. Eye Frame Shape (Bingkai Sudut Luar)</span>
+                  <label className="text-xs font-bold text-slate-700 block">
+                    Eye Frame Shape (Bingkai Sudut Luar)
                   </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {EYE_FRAME_SHAPES.map((st) => (
-                      <button
-                        key={st.id}
-                        type="button"
-                        onClick={() => setQrEyeFrame(st.id)}
-                        className={`text-left p-2.5 rounded-2xl border transition ${
-                          qrEyeFrame === st.id 
-                            ? 'border-slate-900 bg-slate-900 text-white shadow-sm' 
-                            : 'border-slate-200 bg-slate-50 hover:bg-white text-slate-800'
-                        }`}
-                      >
-                        <div className="font-bold text-xs">{st.label}</div>
-                        <div className={`text-[10px] mt-0.5 ${qrEyeFrame === st.id ? 'text-slate-300' : 'text-slate-400'}`}>
-                          {st.desc}
-                        </div>
-                      </button>
-                    ))}
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    {/* Square Frame */}
+                    <button
+                      type="button"
+                      title="Square Frame (Bingkai Kotak)"
+                      onClick={() => setQrEyeFrame('square')}
+                      className={tileBtn(qrEyeFrame === 'square')}
+                    >
+                      <svg viewBox="0 0 24 24" className="w-8 h-8">
+                        <rect x="3" y="3" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="3.2" />
+                      </svg>
+                    </button>
+
+                    {/* Rounded Frame */}
+                    <button
+                      type="button"
+                      title="Rounded Frame (Bingkai Melengkung)"
+                      onClick={() => setQrEyeFrame('rounded')}
+                      className={tileBtn(qrEyeFrame === 'rounded')}
+                    >
+                      <svg viewBox="0 0 24 24" className="w-8 h-8">
+                        <rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" strokeWidth="3.2" />
+                      </svg>
+                    </button>
+
+                    {/* Circle Frame */}
+                    <button
+                      type="button"
+                      title="Circle Frame (Lingkaran Cincin)"
+                      onClick={() => setQrEyeFrame('circle')}
+                      className={tileBtn(qrEyeFrame === 'circle')}
+                    >
+                      <svg viewBox="0 0 24 24" className="w-8 h-8">
+                        <circle cx="12" cy="12" r="8.2" fill="none" stroke="currentColor" strokeWidth="3.2" />
+                      </svg>
+                    </button>
+
+                    {/* Leaf Frame */}
+                    <button
+                      type="button"
+                      title="Leaf Frame (Bingkai Daun)"
+                      onClick={() => setQrEyeFrame('leaf')}
+                      className={tileBtn(qrEyeFrame === 'leaf')}
+                    >
+                      <svg viewBox="0 0 24 24" className="w-8 h-8">
+                        <path d="M 8.5 3.5 H 20.5 V 15.5 A 5 5 0 0 1 15.5 20.5 H 3.5 V 8.5 A 5 5 0 0 1 8.5 3.5 Z" fill="none" stroke="currentColor" strokeWidth="3.2" />
+                      </svg>
+                    </button>
+
+                    {/* Teardrop Frame */}
+                    <button
+                      type="button"
+                      title="Teardrop Frame (Bingkai Tetesan)"
+                      onClick={() => setQrEyeFrame('teardrop')}
+                      className={tileBtn(qrEyeFrame === 'teardrop')}
+                    >
+                      <svg viewBox="0 0 24 24" className="w-8 h-8">
+                        <path d="M 3.5 3.5 H 15.5 A 5 5 0 0 1 20.5 8.5 V 15.5 A 5 5 0 0 1 15.5 20.5 H 8.5 A 5 5 0 0 1 3.5 15.5 Z" fill="none" stroke="currentColor" strokeWidth="3.2" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
 
                 {/* 3. Eye Ball Shape */}
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                    <span>3. Eye Ball Shape (Titik Sudut Dalam)</span>
+                  <label className="text-xs font-bold text-slate-700 block">
+                    Eye Ball Shape (Inti Sudut Dalam)
                   </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {EYE_BALL_SHAPES.map((st) => (
-                      <button
-                        key={st.id}
-                        type="button"
-                        onClick={() => setQrEyeBall(st.id)}
-                        className={`text-left p-2.5 rounded-2xl border transition ${
-                          qrEyeBall === st.id 
-                            ? 'border-slate-900 bg-slate-900 text-white shadow-sm' 
-                            : 'border-slate-200 bg-slate-50 hover:bg-white text-slate-800'
-                        }`}
-                      >
-                        <div className="font-bold text-xs">{st.label}</div>
-                        <div className={`text-[10px] mt-0.5 ${qrEyeBall === st.id ? 'text-slate-300' : 'text-slate-400'}`}>
-                          {st.desc}
-                        </div>
-                      </button>
-                    ))}
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    {/* Square Ball */}
+                    <button
+                      type="button"
+                      title="Square Core (Kotak Padat)"
+                      onClick={() => setQrEyeBall('square')}
+                      className={tileBtn(qrEyeBall === 'square')}
+                    >
+                      <svg viewBox="0 0 24 24" className="w-7 h-7">
+                        <rect x="5" y="5" width="14" height="14" fill="currentColor" />
+                      </svg>
+                    </button>
+
+                    {/* Circle Ball */}
+                    <button
+                      type="button"
+                      title="Circle Core (Bulat Padat)"
+                      onClick={() => setQrEyeBall('circle')}
+                      className={tileBtn(qrEyeBall === 'circle')}
+                    >
+                      <svg viewBox="0 0 24 24" className="w-7 h-7">
+                        <circle cx="12" cy="12" r="7.5" fill="currentColor" />
+                      </svg>
+                    </button>
+
+                    {/* Rounded Ball */}
+                    <button
+                      type="button"
+                      title="Rounded Core (Kotak Tumpul)"
+                      onClick={() => setQrEyeBall('rounded')}
+                      className={tileBtn(qrEyeBall === 'rounded')}
+                    >
+                      <svg viewBox="0 0 24 24" className="w-7 h-7">
+                        <rect x="5" y="5" width="14" height="14" rx="4" fill="currentColor" />
+                      </svg>
+                    </button>
+
+                    {/* Diamond Ball */}
+                    <button
+                      type="button"
+                      title="Diamond Core (Belah Ketupat)"
+                      onClick={() => setQrEyeBall('diamond')}
+                      className={tileBtn(qrEyeBall === 'diamond')}
+                    >
+                      <svg viewBox="0 0 24 24" className="w-7 h-7">
+                        <polygon points="12,3.5 20.5,12 12,20.5 3.5,12" fill="currentColor" />
+                      </svg>
+                    </button>
+
+                    {/* Leaf Ball */}
+                    <button
+                      type="button"
+                      title="Leaf Core (Inti Daun)"
+                      onClick={() => setQrEyeBall('leaf')}
+                      className={tileBtn(qrEyeBall === 'leaf')}
+                    >
+                      <svg viewBox="0 0 24 24" className="w-7 h-7">
+                        <path d="M 8.5 5 H 19 V 15.5 A 3.5 3.5 0 0 1 15.5 19 H 5 V 8.5 A 3.5 3.5 0 0 1 8.5 5 Z" fill="currentColor" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
 
                 {/* 4. Logo Center Embedding */}
-                <div className="space-y-2 pt-1">
-                  <label className="text-xs font-bold text-slate-800 flex items-center justify-between">
-                    <span className="flex items-center gap-1.5">
-                      <ImageIcon className="h-3.5 w-3.5 text-slate-500" />
-                      <span>4. Logo Center di Tengah QR (Opsional)</span>
-                    </span>
+                <div className="space-y-2 pt-2 border-t border-slate-100">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                      <ImageIcon className="h-4 w-4 text-slate-500" />
+                      <span>Upload Logo Toko di Tengah QRIS (Opsional)</span>
+                    </label>
                     {qrLogo && (
                       <button
                         type="button"
@@ -465,7 +604,7 @@ export default function SettingsPage() {
                         <span>Hapus Logo</span>
                       </button>
                     )}
-                  </label>
+                  </div>
 
                   <div className="flex items-center gap-3">
                     <input
@@ -478,29 +617,29 @@ export default function SettingsPage() {
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-800 text-xs font-semibold transition"
+                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-800 text-xs font-semibold transition"
                     >
                       <UploadCloud className="h-4 w-4 text-slate-600" />
-                      <span>{qrLogo ? 'Ganti File Logo...' : 'Upload Logo Toko (PNG/SVG)...'}</span>
+                      <span>{qrLogo ? 'Ganti File Logo...' : 'Pilih File Logo (PNG/SVG)...'}</span>
                     </button>
 
                     {qrLogo && (
-                      <div className="flex items-center gap-2">
-                        <img src={qrLogo} alt="Logo Toko" className="h-8 w-8 rounded-lg object-contain bg-white border border-slate-200 p-0.5" />
-                        <span className="text-[11px] text-emerald-600 font-semibold">Logo terpasang</span>
+                      <div className="flex items-center gap-2.5 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl">
+                        <img src={qrLogo} alt="Logo Toko" className="h-7 w-7 rounded-md object-contain bg-white" />
+                        <span className="text-xs text-emerald-600 font-semibold">Logo Aktif</span>
                       </div>
                     )}
                   </div>
                   <p className="text-[10px] text-slate-400">
-                    Logo akan diletakkan di tengah dengan shield putih pelindung. Scanner QR tetap membaca mulus (Error Correction Level H).
+                    Otomatis dipasang di tengah QR dengan pelindung putih. Error Correction level H (30%) diaktifkan otomatis agar scanner bank/e-wallet tetap membaca cepat.
                   </p>
                 </div>
 
                 {/* 5. Colors Section */}
-                <div className="space-y-2 pt-1">
+                <div className="space-y-2 pt-2 border-t border-slate-100">
                   <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                    <Palette className="h-3.5 w-3.5 text-slate-500" />
-                    <span>5. Pilihan Warna QRIS</span>
+                    <Palette className="h-4 w-4 text-slate-500" />
+                    <span>Warna Tema QRIS</span>
                   </label>
 
                   <div className="flex flex-wrap items-center gap-2.5">
@@ -509,7 +648,7 @@ export default function SettingsPage() {
                         key={c.hex}
                         type="button"
                         onClick={() => setQrColor(c.hex)}
-                        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-semibold transition ${
+                        className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-xs font-semibold transition ${
                           qrColor.toLowerCase() === c.hex.toLowerCase()
                             ? 'border-slate-900 ring-2 ring-slate-900/20 bg-white text-slate-900 shadow-sm'
                             : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-white'
@@ -561,7 +700,7 @@ export default function SettingsPage() {
                       </div>
                     )}
                   </div>
-                  <div className="space-y-1.5 text-center sm:text-left min-w-0 flex-1">
+                  <div className="space-y-2 text-center sm:text-left min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-1.5 justify-center sm:justify-start">
                       <span className="rounded-full bg-slate-900 px-2.5 py-0.5 text-[10px] font-bold text-white capitalize">
                         Body: {qrBody}
@@ -580,9 +719,9 @@ export default function SettingsPage() {
                     </div>
                     <h3 className="font-bold text-slate-900 text-sm">Preview Real-Time QRIS Dinamis</h3>
                     <p className="text-xs text-slate-500 leading-relaxed">
-                      QR code di atas digenerate langsung dengan spesifikasi standar EMVCo. Scanner bank & e-wallet tetap membaca kode dengan cepat dan presisi.
+                      QR code di atas di-render langsung secara live sesuai bentuk icon dan logo yang dipilih.
                     </p>
-                    <div className="text-[11px] font-mono text-slate-400 pt-0.5">
+                    <div className="text-[11px] font-mono text-slate-400">
                       Warna aktif: <strong className="text-slate-800">{qrColor}</strong>
                     </div>
                   </div>
