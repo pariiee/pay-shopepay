@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { 
   ArrowLeft, Settings, Save, RotateCw, CheckCircle2, 
   Store, Hash, KeyRound, AlertCircle, ShieldCheck, 
-  QrCode, Plus, Trash2, Palette, Eye
+  QrCode, Plus, Trash2, Palette, Image as ImageIcon, X, UploadCloud
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 
@@ -17,12 +17,29 @@ const SOLID_COLORS = [
   { label: 'Emerald Green', hex: '#059669' }
 ];
 
-const QR_STYLES = [
-  { id: 'classic', label: 'Classic Sharp', desc: 'Kotak standar presisi tinggi' },
-  { id: 'dots', label: 'Modern Dots', desc: 'Titik bulat halus & modern' },
-  { id: 'rounded', label: 'Smooth Rounded', desc: 'Sudut modul melengkung rapi' },
-  { id: 'classy', label: 'Classy Eyes', desc: 'Bingkai sudut anggun & elegan' },
-  { id: 'minimal', label: 'Minimalist', desc: 'Format ramping modern' }
+const BODY_SHAPES = [
+  { id: 'square', label: 'Square', desc: 'Kotak standar' },
+  { id: 'dots', label: 'Dots / Circles', desc: 'Titik bulat modern' },
+  { id: 'rounded', label: 'Squircle', desc: 'Kotak melengkung' },
+  { id: 'diamond', label: 'Diamond', desc: 'Belah ketupat' },
+  { id: 'star', label: 'Star / Cross', desc: 'Bintang 4 sudut' },
+  { id: 'leaf', label: 'Leaf Pattern', desc: 'Sudut kelopak daun' }
+];
+
+const EYE_FRAME_SHAPES = [
+  { id: 'square', label: 'Square Box', desc: 'Bingkai kotak tegas' },
+  { id: 'rounded', label: 'Squircle Frame', desc: 'Bingkai sudut lengkung' },
+  { id: 'circle', label: 'Circular Ring', desc: 'Bingkai lingkaran penuh' },
+  { id: 'leaf', label: 'Leaf Contour', desc: 'Bingkai daun diagonal' },
+  { id: 'teardrop', label: 'Teardrop Frame', desc: 'Bingkai tetesan air' }
+];
+
+const EYE_BALL_SHAPES = [
+  { id: 'square', label: 'Solid Square', desc: 'Inti kotak padat' },
+  { id: 'circle', label: 'Solid Circle', desc: 'Inti titik bulat' },
+  { id: 'rounded', label: 'Rounded Core', desc: 'Inti kotak tumpul' },
+  { id: 'diamond', label: 'Diamond Core', desc: 'Inti belah ketupat' },
+  { id: 'leaf', label: 'Leaf Core', desc: 'Inti kelopak daun' }
 ];
 
 export default function SettingsPage() {
@@ -31,9 +48,15 @@ export default function SettingsPage() {
   const [uniqueMax, setUniqueMax] = useState(99);
   const [apiKey, setApiKey] = useState('');
   const [webhookUrls, setWebhookUrls] = useState(['']);
-  const [qrStyle, setQrStyle] = useState('classic');
+
+  // Modular QR Customizer
+  const [qrBody, setQrBody] = useState('square');
+  const [qrEyeFrame, setQrEyeFrame] = useState('square');
+  const [qrEyeBall, setQrEyeBall] = useState('square');
   const [qrColor, setQrColor] = useState('#0f172a');
   const [customColor, setCustomColor] = useState('#2563eb');
+  const [qrLogo, setQrLogo] = useState('');
+
   const [previewQr, setPreviewQr] = useState('');
   const [previewLoading, setPreviewLoading] = useState(false);
 
@@ -41,13 +64,25 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const fileInputRef = useRef(null);
 
+  // Live real-time preview updater
   useEffect(() => {
     let active = true;
     const fetchPreview = async () => {
       setPreviewLoading(true);
       try {
-        const res = await fetch(`/api/settings/qr-preview?style=${qrStyle}&color=${encodeURIComponent(qrColor)}`);
+        const res = await fetch('/api/settings/qr-preview', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            body: qrBody,
+            eyeFrame: qrEyeFrame,
+            eyeBall: qrEyeBall,
+            color: qrColor,
+            logo: qrLogo || null
+          })
+        });
         const json = await res.json();
         if (active && json.success) setPreviewQr(json.qr_image);
       } catch (_) {}
@@ -55,9 +90,9 @@ export default function SettingsPage() {
         if (active) setPreviewLoading(false);
       }
     };
-    const t = setTimeout(fetchPreview, 100);
+    const t = setTimeout(fetchPreview, 120);
     return () => { active = false; clearTimeout(t); };
-  }, [qrStyle, qrColor]);
+  }, [qrBody, qrEyeFrame, qrEyeBall, qrColor, qrLogo]);
 
   const fetchSettings = async () => {
     setLoading(true);
@@ -69,19 +104,23 @@ export default function SettingsPage() {
       }
       const json = await res.json();
       if (json.success) {
-        setStoreName(json.data.store_name);
-        setUniqueEnabled(json.data.unique_code_enabled);
-        setUniqueMax(json.data.unique_code_max);
-        setApiKey(json.data.api_key);
-        
+        setStoreName(json.data.store_name || 'Ngecode Aje');
+        setUniqueEnabled(json.data.unique_code_enabled ?? true);
+        setUniqueMax(json.data.unique_code_max || 99);
+        setApiKey(json.data.api_key || '');
+
         let urls = json.data.webhook_urls || [];
-        if (urls.length === 0 && json.data.webhook_url) {
+        if (!urls.length && json.data.webhook_url) {
           urls = [json.data.webhook_url];
         }
         if (urls.length === 0) urls = [''];
         setWebhookUrls(urls);
 
-        if (json.data.qr_style) setQrStyle(json.data.qr_style);
+        if (json.data.qr_body) setQrBody(json.data.qr_body);
+        if (json.data.qr_eye_frame) setQrEyeFrame(json.data.qr_eye_frame);
+        if (json.data.qr_eye_ball) setQrEyeBall(json.data.qr_eye_ball);
+        if (json.data.qr_logo) setQrLogo(json.data.qr_logo);
+
         if (json.data.qr_color) {
           setQrColor(json.data.qr_color);
           if (!SOLID_COLORS.some(c => c.hex.toLowerCase() === json.data.qr_color.toLowerCase())) {
@@ -117,6 +156,20 @@ export default function SettingsPage() {
     setWebhookUrls(updated);
   };
 
+  const handleLogoUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      setError('Ukuran file logo maksimal 2MB');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setQrLogo(ev.target?.result || '');
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSave = async (e) => {
     e.preventDefault();
     setSaving(true);
@@ -136,8 +189,11 @@ export default function SettingsPage() {
           api_key: apiKey,
           webhook_urls: cleanUrls,
           webhook_url: cleanUrls[0] || '',
-          qr_style: qrStyle,
-          qr_color: qrColor
+          qr_body: qrBody,
+          qr_eye_frame: qrEyeFrame,
+          qr_eye_ball: qrEyeBall,
+          qr_color: qrColor,
+          qr_logo: qrLogo
         })
       });
 
@@ -156,7 +212,7 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-[#e9edf2] text-slate-900 flex flex-col justify-between">
       <Navbar active="settings" onRefresh={fetchSettings} loading={loading} />
 
-      <main className="w-full max-w-2xl mx-auto px-4 pb-20 sm:px-6 flex-1">
+      <main className="w-full max-w-3xl mx-auto px-4 pb-20 sm:px-6 flex-1">
         <div className="rounded-[28px] bg-white p-6 sm:p-8 shadow-xl shadow-slate-900/5">
           <div className="flex items-center gap-3 border-b border-slate-100 pb-5 mb-6">
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 text-white" style={{ color: LIME }}>
@@ -164,7 +220,7 @@ export default function SettingsPage() {
             </div>
             <div>
               <h1 className="text-xl font-bold text-slate-900">Pengaturan Toko & Gateway</h1>
-              <p className="text-xs text-slate-500 mt-0.5">Atur profil merchant, Webhook multi-URL, style QRIS, dan API key</p>
+              <p className="text-xs text-slate-500 mt-0.5">Atur profil toko, Webhook multi-URL, kustomisasi QRIS, logo, dan API key</p>
             </div>
           </div>
 
@@ -202,7 +258,7 @@ export default function SettingsPage() {
                   onChange={(e) => setStoreName(e.target.value)}
                   className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:outline-none focus:border-slate-900 transition"
                 />
-                <p className="text-[11px] text-slate-400">Nama toko yang ditampilkan di halaman checkout & receipt.</p>
+                <p className="text-[11px] text-slate-400">Nama toko yang ditampilkan di invoice pembayaran & checkout.</p>
               </div>
 
               {/* Unique Code Settings */}
@@ -248,7 +304,7 @@ export default function SettingsPage() {
                 )}
               </div>
 
-              {/* Multi-Webhook URLs (Max 5) */}
+              {/* Multi-Webhook URLs */}
               <div className="space-y-3 pt-3 border-t border-slate-100">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-bold text-slate-900 flex items-center gap-2">
@@ -260,7 +316,7 @@ export default function SettingsPage() {
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-400">
-                  Setiap transaksi lunas/expired akan otomatis dikirim serentak ke semua URL webhook di bawah ini (disertai HMAC-SHA256 signature).
+                  Notifikasi mutasi lunas otomatis dikirim ke semua URL ini bersama signature HMAC-SHA256.
                 </p>
 
                 <div className="space-y-2">
@@ -269,7 +325,7 @@ export default function SettingsPage() {
                       <span className="font-mono text-xs text-slate-400 w-5 text-right">{idx + 1}.</span>
                       <input
                         type="url"
-                        placeholder="https://proyek-kamu.com/api/payment/webhook"
+                        placeholder="https://domain-kamu.com/api/payment/webhook"
                         value={url}
                         onChange={(e) => updateWebhookUrl(idx, e.target.value)}
                         className="flex-1 px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-mono focus:outline-none focus:border-slate-900 transition"
@@ -300,46 +356,154 @@ export default function SettingsPage() {
                 )}
               </div>
 
-              {/* QR Code Style & Custom Color */}
-              <div className="space-y-4 pt-3 border-t border-slate-100">
-                <div className="flex items-center gap-2">
-                  <QrCode className="h-4 w-4 text-slate-500" />
-                  <label className="text-xs font-bold text-slate-900">Style & Warna QRIS Dinamis</label>
+              {/* KUSTOMISASI MODULAR DESIGN QRIS */}
+              <div className="space-y-5 pt-4 border-t border-slate-100">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 text-white" style={{ color: LIME }}>
+                      <QrCode className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <h2 className="text-sm font-bold text-slate-900">Custom Desain QRIS</h2>
+                      <p className="text-[11px] text-slate-400">Atur pola modul, bentuk sudut luar/dalam, dan pasang logo</p>
+                    </div>
+                  </div>
                 </div>
-                <p className="text-[11px] text-slate-400">
-                  Pilih bentuk modul QRIS (5 gaya) dan tentukan warna tema pembayaran.
-                </p>
 
-                {/* 5 Styles Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                  {QR_STYLES.map((st) => (
+                {/* 1. Body Shape */}
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                    <span>1. Body Shape (Pola Modul Isi)</span>
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {BODY_SHAPES.map((st) => (
+                      <button
+                        key={st.id}
+                        type="button"
+                        onClick={() => setQrBody(st.id)}
+                        className={`text-left p-2.5 rounded-2xl border transition ${
+                          qrBody === st.id 
+                            ? 'border-slate-900 bg-slate-900 text-white shadow-sm' 
+                            : 'border-slate-200 bg-slate-50 hover:bg-white text-slate-800'
+                        }`}
+                      >
+                        <div className="font-bold text-xs">{st.label}</div>
+                        <div className={`text-[10px] mt-0.5 ${qrBody === st.id ? 'text-slate-300' : 'text-slate-400'}`}>
+                          {st.desc}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 2. Eye Frame Shape */}
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                    <span>2. Eye Frame Shape (Bingkai Sudut Luar)</span>
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {EYE_FRAME_SHAPES.map((st) => (
+                      <button
+                        key={st.id}
+                        type="button"
+                        onClick={() => setQrEyeFrame(st.id)}
+                        className={`text-left p-2.5 rounded-2xl border transition ${
+                          qrEyeFrame === st.id 
+                            ? 'border-slate-900 bg-slate-900 text-white shadow-sm' 
+                            : 'border-slate-200 bg-slate-50 hover:bg-white text-slate-800'
+                        }`}
+                      >
+                        <div className="font-bold text-xs">{st.label}</div>
+                        <div className={`text-[10px] mt-0.5 ${qrEyeFrame === st.id ? 'text-slate-300' : 'text-slate-400'}`}>
+                          {st.desc}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 3. Eye Ball Shape */}
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                    <span>3. Eye Ball Shape (Titik Sudut Dalam)</span>
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {EYE_BALL_SHAPES.map((st) => (
+                      <button
+                        key={st.id}
+                        type="button"
+                        onClick={() => setQrEyeBall(st.id)}
+                        className={`text-left p-2.5 rounded-2xl border transition ${
+                          qrEyeBall === st.id 
+                            ? 'border-slate-900 bg-slate-900 text-white shadow-sm' 
+                            : 'border-slate-200 bg-slate-50 hover:bg-white text-slate-800'
+                        }`}
+                      >
+                        <div className="font-bold text-xs">{st.label}</div>
+                        <div className={`text-[10px] mt-0.5 ${qrEyeBall === st.id ? 'text-slate-300' : 'text-slate-400'}`}>
+                          {st.desc}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 4. Logo Center Embedding */}
+                <div className="space-y-2 pt-1">
+                  <label className="text-xs font-bold text-slate-800 flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <ImageIcon className="h-3.5 w-3.5 text-slate-500" />
+                      <span>4. Logo Center di Tengah QR (Opsional)</span>
+                    </span>
+                    {qrLogo && (
+                      <button
+                        type="button"
+                        onClick={() => setQrLogo('')}
+                        className="text-rose-600 hover:text-rose-700 text-[11px] font-semibold flex items-center gap-1"
+                      >
+                        <X className="h-3 w-3" />
+                        <span>Hapus Logo</span>
+                      </button>
+                    )}
+                  </label>
+
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleLogoUpload}
+                      accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                      className="hidden"
+                    />
                     <button
-                      key={st.id}
                       type="button"
-                      onClick={() => setQrStyle(st.id)}
-                      className={`text-left p-3 rounded-2xl border transition ${
-                        qrStyle === st.id 
-                          ? 'border-slate-900 bg-slate-900 text-white shadow-sm' 
-                          : 'border-slate-200 bg-slate-50 hover:bg-white text-slate-800'
-                      }`}
+                      onClick={() => fileInputRef.current?.click()}
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-800 text-xs font-semibold transition"
                     >
-                      <div className="font-bold text-xs">{st.label}</div>
-                      <div className={`text-[10px] mt-0.5 ${qrStyle === st.id ? 'text-slate-300' : 'text-slate-500'}`}>
-                        {st.desc}
-                      </div>
+                      <UploadCloud className="h-4 w-4 text-slate-600" />
+                      <span>{qrLogo ? 'Ganti File Logo...' : 'Upload Logo Toko (PNG/SVG)...'}</span>
                     </button>
-                  ))}
+
+                    {qrLogo && (
+                      <div className="flex items-center gap-2">
+                        <img src={qrLogo} alt="Logo Toko" className="h-8 w-8 rounded-lg object-contain bg-white border border-slate-200 p-0.5" />
+                        <span className="text-[11px] text-emerald-600 font-semibold">Logo terpasang</span>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-slate-400">
+                    Logo akan diletakkan di tengah dengan shield putih pelindung. Scanner QR tetap membaca mulus (Error Correction Level H).
+                  </p>
                 </div>
 
-                {/* Colors Section */}
-                <div className="space-y-2 pt-2">
-                  <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                {/* 5. Colors Section */}
+                <div className="space-y-2 pt-1">
+                  <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                     <Palette className="h-3.5 w-3.5 text-slate-500" />
-                    <span>Pilihan Warna QRIS</span>
+                    <span>5. Pilihan Warna QRIS</span>
                   </label>
 
                   <div className="flex flex-wrap items-center gap-2.5">
-                    {/* 3 Solid Color Presets */}
                     {SOLID_COLORS.map((c) => (
                       <button
                         key={c.hex}
@@ -356,7 +520,6 @@ export default function SettingsPage() {
                       </button>
                     ))}
 
-                    {/* 1 Custom Color Picker */}
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-slate-200 bg-slate-50">
                       <input
                         type="color"
@@ -382,8 +545,8 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                {/* Live QR Style Preview Box */}
-                <div className="rounded-2xl bg-slate-50 border border-slate-200/80 p-4 flex flex-col sm:flex-row items-center gap-4 mt-3">
+                {/* LIVE PREVIEW BOX */}
+                <div className="rounded-2xl bg-slate-50 border border-slate-200/80 p-4 flex flex-col sm:flex-row items-center gap-5 mt-4">
                   <div className="bg-white p-3 rounded-2xl shadow-sm border border-slate-100 shrink-0 relative flex items-center justify-center">
                     {previewLoading && (
                       <div className="absolute inset-0 bg-white/75 backdrop-blur-[1px] rounded-2xl flex items-center justify-center z-10">
@@ -391,24 +554,36 @@ export default function SettingsPage() {
                       </div>
                     )}
                     {previewQr ? (
-                      <img src={previewQr} alt="Preview QRIS" className="w-36 h-36 object-contain rounded-lg" />
+                      <img src={previewQr} alt="Preview QRIS" className="w-40 h-40 object-contain rounded-lg" />
                     ) : (
-                      <div className="w-36 h-36 flex items-center justify-center text-xs text-slate-400">
+                      <div className="w-40 h-40 flex items-center justify-center text-xs text-slate-400">
                         Memuat QR...
                       </div>
                     )}
                   </div>
                   <div className="space-y-1.5 text-center sm:text-left min-w-0 flex-1">
-                    <div className="inline-flex items-center gap-1.5 rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] font-bold text-white">
-                      <span className="h-2 w-2 rounded-full" style={{ backgroundColor: qrColor }} />
-                      <span>{QR_STYLES.find(s => s.id === qrStyle)?.label || qrStyle}</span>
+                    <div className="flex flex-wrap items-center gap-1.5 justify-center sm:justify-start">
+                      <span className="rounded-full bg-slate-900 px-2.5 py-0.5 text-[10px] font-bold text-white capitalize">
+                        Body: {qrBody}
+                      </span>
+                      <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-[10px] font-bold text-slate-700 capitalize">
+                        Frame: {qrEyeFrame}
+                      </span>
+                      <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-[10px] font-bold text-slate-700 capitalize">
+                        Ball: {qrEyeBall}
+                      </span>
+                      {qrLogo && (
+                        <span className="rounded-full bg-emerald-100 text-emerald-800 px-2 py-0.5 text-[10px] font-bold">
+                          Logo Active
+                        </span>
+                      )}
                     </div>
-                    <h3 className="font-bold text-slate-900 text-sm">Preview Real-Time QRIS</h3>
+                    <h3 className="font-bold text-slate-900 text-sm">Preview Real-Time QRIS Dinamis</h3>
                     <p className="text-xs text-slate-500 leading-relaxed">
-                      Ini tampilan nyata QRIS yang akan dilihat pembeli di invoice /payin/:id. Tetap terbaca cepat oleh BCA, Mandiri, BRI, GoPay, OVO, Dana, & ShopeePay.
+                      QR code di atas digenerate langsung dengan spesifikasi standar EMVCo. Scanner bank & e-wallet tetap membaca kode dengan cepat dan presisi.
                     </p>
                     <div className="text-[11px] font-mono text-slate-400 pt-0.5">
-                      Warna aktif: <strong className="text-slate-700">{qrColor}</strong>
+                      Warna aktif: <strong className="text-slate-800">{qrColor}</strong>
                     </div>
                   </div>
                 </div>

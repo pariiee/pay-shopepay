@@ -12,9 +12,19 @@ export async function GET(req, { params }) {
       return NextResponse.json({ success: false, error: 'Tagihan tidak ditemukan' }, { status: 404 });
     }
 
-    const qrStyle = getSetting('qr_style', 'classic');
+    const qrBody = getSetting('qr_body', 'square');
+    const qrEyeFrame = getSetting('qr_eye_frame', 'square');
+    const qrEyeBall = getSetting('qr_eye_ball', 'square');
     const qrColor = getSetting('qr_color', '#0f172a');
-    const qrImage = generateStyledQrSvg(row.qris_string, { style: qrStyle, color: qrColor, size: 380 });
+    const qrLogo = getSetting('qr_logo', null);
+    const qrImage = generateStyledQrSvg(row.qris_string, { 
+      body: qrBody, 
+      eyeFrame: qrEyeFrame, 
+      eyeBall: qrEyeBall, 
+      color: qrColor, 
+      logo: qrLogo,
+      size: 380 
+    });
 
     const now = Math.floor(Date.now() / 1000);
     const expiresAt = row.expires_at || (row.created_at + 300); // 5 mins fallback

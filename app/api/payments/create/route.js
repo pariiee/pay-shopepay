@@ -63,9 +63,19 @@ export async function POST(req) {
     }
 
     const dynamicQR = generateDynamicQRIS(staticQR, finalAmount);
-    const qrStyle = getSetting('qr_style', 'classic');
+    const qrBody = getSetting('qr_body', 'square');
+    const qrEyeFrame = getSetting('qr_eye_frame', 'square');
+    const qrEyeBall = getSetting('qr_eye_ball', 'square');
     const qrColor = getSetting('qr_color', '#0f172a');
-    const qrImage = generateStyledQrSvg(dynamicQR, { style: qrStyle, color: qrColor, size: 380 });
+    const qrLogo = getSetting('qr_logo', null);
+    const qrImage = generateStyledQrSvg(dynamicQR, { 
+      body: qrBody, 
+      eyeFrame: qrEyeFrame, 
+      eyeBall: qrEyeBall, 
+      color: qrColor, 
+      logo: qrLogo,
+      size: 380 
+    });
 
     const paymentId = crypto.randomBytes(4).toString('hex');
 

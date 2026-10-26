@@ -29,7 +29,11 @@ export async function GET() {
         webhook_url: getSetting('webhook_url', ''),
         webhook_urls: webhookUrls,
         qr_style: getSetting('qr_style', 'classic'),
-        qr_color: getSetting('qr_color', '#0f172a')
+        qr_body: getSetting('qr_body', 'square'),
+        qr_eye_frame: getSetting('qr_eye_frame', 'square'),
+        qr_eye_ball: getSetting('qr_eye_ball', 'square'),
+        qr_color: getSetting('qr_color', '#0f172a'),
+        qr_logo: getSetting('qr_logo', '')
       }
     });
 }
@@ -54,7 +58,11 @@ export async function POST(req) {
       if (sanitized.length > 0) setSetting('webhook_url', sanitized[0]);
     }
     if (body.qr_style !== undefined) setSetting('qr_style', body.qr_style);
+    if (body.qr_body !== undefined) setSetting('qr_body', body.qr_body);
+    if (body.qr_eye_frame !== undefined) setSetting('qr_eye_frame', body.qr_eye_frame);
+    if (body.qr_eye_ball !== undefined) setSetting('qr_eye_ball', body.qr_eye_ball);
     if (body.qr_color !== undefined) setSetting('qr_color', body.qr_color);
+    if (body.qr_logo !== undefined) setSetting('qr_logo', body.qr_logo);
 
     return NextResponse.json({ success: true, message: 'Pengaturan berhasil disimpan' });
   } catch (err) {
