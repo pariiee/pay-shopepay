@@ -84,7 +84,7 @@ export default function SettingsPage() {
     try {
       const res = await fetch('/api/settings');
       if (res.status === 401) {
-        window.location.href = '/login';
+        window.location.href = '/macuk';
         return;
       }
       const json = await res.json();

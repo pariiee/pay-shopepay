@@ -165,7 +165,7 @@ export default function DashboardPage() {
     try {
       const res = await fetch('/api/dashboard/stats');
       if (res.status === 401) {
-        window.location.href = '/login';
+        window.location.href = '/macuk';
         return;
       }
       const json = await res.json();

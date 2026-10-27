@@ -1,27 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { KeyRound, ArrowLeft, AlertCircle, RotateCw, Eye, EyeOff } from 'lucide-react';
 
 const LIME = '#d8f53b';
 
-export default function LoginPage() {
+export default function MacukPage() {
   const [token, setToken] = useState('');
   const [showToken, setShowToken] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
-
-  // Auto-fill token from query param if available
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const qToken = params.get('token');
-      if (qToken) setToken(qToken);
-    }
-  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -71,7 +62,7 @@ export default function LoginPage() {
             <KeyRound className="h-6 w-6" />
           </div>
           <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">Admin Gateway</h1>
-          <p className="text-xs text-slate-500 mt-1">Masukkan satu token akses admin untuk mengelola gateway</p>
+          <p className="text-xs text-slate-500 mt-1">Masukkan token akses admin rahasia</p>
         </div>
 
         {error && (
@@ -91,6 +82,7 @@ export default function LoginPage() {
                 type={showToken ? 'text' : 'password'}
                 required
                 autoFocus
+                autoComplete="off"
                 placeholder="alpay-sec-••••••••••••"
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
@@ -105,7 +97,7 @@ export default function LoginPage() {
               </button>
             </div>
             <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
-              Hanya membutuhkan token akses rahasia (tanpa username &amp; password).
+              Autentikasi 1-kolom aman tanpa URL parameter.
             </p>
           </div>
 
@@ -127,7 +119,7 @@ export default function LoginPage() {
       </div>
 
       <footer className="py-4 text-center text-xs text-slate-400">
-        Alpay &copy; 2026 • Single-Token Protected
+        Alpay &copy; 2026 • Stealth Auth Area
       </footer>
     </div>
   );

@@ -13,7 +13,7 @@ export default function Navbar({ active = '', storeName = 'Ngecode Aje', tokenOk
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
     } catch (_) {}
-    window.location.href = '/login';
+    window.location.href = '/macuk';
   };
 
   const navItems = [

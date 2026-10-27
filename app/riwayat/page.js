@@ -56,7 +56,7 @@ export default function RiwayatPage() {
       ]);
 
       if (txRes.status === 401 || logRes.status === 401) {
-        window.location.href = '/login';
+        window.location.href = '/macuk';
         return;
       }
 
