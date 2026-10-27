@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 export const YAML_SPEC = `openapi: 3.0.3
 info:
   title: Alpay Gateway API
-  description: API Gateway Pembayaran Dinamis ShopeePay QRIS & Webhook Callback
+  description: API Gateway Pembayaran Dinamis QRIS & Webhook Callback
   version: 1.0.0
 servers:
   - url: https://pay.ghifari.biz.id

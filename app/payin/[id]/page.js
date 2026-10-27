@@ -297,7 +297,7 @@ export default function InvoicePage({ params }) {
               <div className="rounded-2xl bg-slate-50 border border-slate-100 p-3 text-xs text-slate-500 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <RotateCw className={`h-3.5 w-3.5 text-slate-700 ${checking ? 'animate-spin' : ''}`} />
-                  <span>{checking ? 'Mengecek Shopee...' : `Cek otomatis (${pollingCountdown}s)`}</span>
+                  <span>{checking ? 'Mengecek mutasi...' : `Cek otomatis (${pollingCountdown}s)`}</span>
                 </div>
                 <button
                   onClick={fetchInvoice}
@@ -380,7 +380,7 @@ export default function InvoicePage({ params }) {
 
         <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-400">
           <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
-          <span>QRIS Standar Nasional EMVCo • ShopeePay Partner</span>
+          <span>QRIS Standar Nasional EMVCo • Alpay</span>
         </div>
       </main>
 

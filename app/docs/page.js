@@ -14,7 +14,7 @@ const LIME = '#d8f53b';
 const OPENAPI_YAML_TEXT = `openapi: 3.0.3
 info:
   title: Alpay Gateway API
-  description: API Gateway Pembayaran Dinamis ShopeePay QRIS & Webhook Callback
+  description: API Gateway Pembayaran Dinamis QRIS & Webhook Callback
   version: 1.0.0
 servers:
   - url: /
@@ -328,7 +328,7 @@ export default function DocsPage() {
           {openEndpoint === 'create' && (
             <div className="border-t border-slate-100 p-5 sm:p-6 space-y-6 text-sm">
               <p className="text-slate-600 leading-relaxed text-xs sm:text-sm">
-                Creates a payment valid for 5 minutes. The QR code is generated automatically from the merchant's ShopeePay QRIS. Returns <code>payment_url</code> + dynamic QR image string.
+                Creates a payment valid for 5 minutes. The QR code is generated automatically from the merchant's QRIS. Returns <code>payment_url</code> + dynamic QR image string.
               </p>
 
               {/* PARAMETER TABLE */}

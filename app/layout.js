@@ -1,8 +1,8 @@
 import './globals.css';
 
 export const metadata = {
-  title: 'Alpay — Modern ShopeePay & QRIS Gateway',
-  description: 'High-performance, stateless QRIS payment gateway and donation portal powered by ShopeePay Partner.',
+  title: 'Alpay — Modern QRIS Payment Gateway',
+  description: 'High-performance, stateless QRIS payment gateway and donation portal powered by Alpay.',
   icons: {
     icon: '/alpay.svg',
     shortcut: '/alpay.svg',

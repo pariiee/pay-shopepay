@@ -214,7 +214,7 @@ export default function DonasiPage() {
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Status Pembayaran</span>
               <h2 className="text-2xl font-black text-slate-900 mt-0.5 mb-1">Alhamdulillah! Lunas</h2>
               <p className="text-xs text-slate-500 mb-6">
-                Pembayaran otomatis terverifikasi lunas dari mutasi ShopeePay.
+                Pembayaran otomatis terverifikasi lunas secara instan.
               </p>
 
               <div className="rounded-2xl bg-slate-50 p-4 text-left text-xs space-y-2.5 mb-6 border border-slate-100">

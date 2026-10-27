@@ -578,11 +578,11 @@ export default function DashboardPage() {
               )}
               <div className="flex justify-between py-2">
                 <span className="text-slate-500">Metode / Issuer</span>
-                <span className="font-semibold text-slate-900">{selectedTx.issuer || 'QRIS ShopeePay'}</span>
+                <span className="font-semibold text-slate-900">{selectedTx.issuer || 'QRIS Alpay'}</span>
               </div>
               {selectedTx.transaction_id && (
                 <div className="flex justify-between py-2">
-                  <span className="text-slate-500">Shopee Mutasi ID</span>
+                  <span className="text-slate-500">Mutasi Ref ID</span>
                   <span className="font-mono text-slate-700">{selectedTx.transaction_id}</span>
                 </div>
               )}

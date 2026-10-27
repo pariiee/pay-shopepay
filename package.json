@@ -1,7 +1,7 @@
 {
   "name": "shoppepay-merchant-system",
   "version": "2.0.0",
-  "description": "ShopeePay Payment Check System with Admin Dashboard",
+  "description": "Alpay QRIS Payment Gateway System with Admin Dashboard",
   "main": "server.js",
   "scripts": {
     "dev": "next dev -p 3010",
