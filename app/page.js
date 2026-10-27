@@ -32,7 +32,7 @@ export default function HomePage() {
       }`}>
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
           <div className="flex items-center gap-2.5">
-            <AlpayLogo className={`transition-all duration-300 shadow-md shadow-slate-900/10 ${
+            <AlpayLogo className={`transition-all duration-300 ${
               scrolled ? 'h-8 w-8' : 'h-10 w-10'
             }`} />
             <span className={`font-extrabold tracking-tight text-slate-900 transition-all duration-300 ${

@@ -176,7 +176,7 @@ export default function DonasiPage() {
       {/* Header */}
       <header className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-5 sm:px-6">
         <Link href="/" className="flex items-center gap-2.5 transition hover:opacity-90">
-          <AlpayLogo className="h-10 w-10 shadow-md shadow-slate-900/10" />
+          <AlpayLogo className="h-10 w-10" />
           <span className="text-xl font-extrabold tracking-tight text-slate-900">Alpay</span>
         </Link>
         <div className="flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 text-xs font-semibold shadow-sm">

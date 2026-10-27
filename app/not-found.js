@@ -13,7 +13,7 @@ export default function NotFound() {
       {/* Header */}
       <header className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-2 py-4">
         <Link href="/" className="flex items-center gap-2">
-          <AlpayLogo className="h-10 w-10 shadow-md shadow-slate-900/10" />
+          <AlpayLogo className="h-10 w-10" />
           <span className="text-xl font-extrabold tracking-tight text-slate-900">Alpay</span>
         </Link>
       </header>

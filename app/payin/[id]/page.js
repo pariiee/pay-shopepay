@@ -207,7 +207,7 @@ export default function InvoicePage({ params }) {
       {/* Header */}
       <header className="mx-auto flex w-full max-w-lg items-center justify-between gap-3 pt-2">
         <Link href="/" className="flex items-center gap-2.5 transition hover:opacity-90">
-          <AlpayLogo className="h-10 w-10 shadow-md shadow-slate-900/10" />
+          <AlpayLogo className="h-10 w-10" />
           <span className="text-xl font-extrabold tracking-tight text-slate-900">Alpay</span>
         </Link>
         <button

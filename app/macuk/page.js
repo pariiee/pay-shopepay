@@ -2,7 +2,7 @@
 
 import AlpayLogo from '@/components/AlpayLogo';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { KeyRound, ArrowLeft, AlertCircle, RotateCw, Eye, EyeOff, ShieldCheck, Smartphone, QrCode } from 'lucide-react';
@@ -16,7 +16,27 @@ export default function MacukPage() {
   const [totpCode, setTotpCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [checkingSession, setCheckingSession] = useState(true);
   const router = useRouter();
+
+  // Auto-redirect if already logged in
+  useEffect(() => {
+    let active = true;
+    fetch('/api/settings')
+      .then(res => {
+        if (active) {
+          if (res.ok) {
+            router.replace('/dashboard');
+          } else {
+            setCheckingSession(false);
+          }
+        }
+      })
+      .catch(() => {
+        if (active) setCheckingSession(false);
+      });
+    return () => { active = false; };
+  }, [router]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -72,13 +92,18 @@ export default function MacukPage() {
       {/* Header */}
       <header className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-2 py-2 sm:px-6">
         <Link href="/" className="flex items-center gap-2.5 transition hover:opacity-90">
-          <AlpayLogo className="h-10 w-10 shadow-md shadow-slate-900/10" />
+          <AlpayLogo className="h-10 w-10" />
           <span className="text-xl font-extrabold tracking-tight text-slate-900">Alpay</span>
         </Link>
       </header>
 
       <div className="w-full max-w-sm mx-auto my-auto rounded-[28px] bg-white p-7 sm:p-9 shadow-xl shadow-slate-900/5 border border-slate-100">
-        {!require2fa ? (
+        {checkingSession ? (
+          <div className="py-12 text-center space-y-3">
+            <RotateCw className="h-6 w-6 animate-spin mx-auto text-slate-800" style={{ color: LIME }} />
+            <p className="text-xs text-slate-500 font-semibold">Memeriksa status sesi...</p>
+          </div>
+        ) : !require2fa ? (
           // STEP 1: TOKEN INPUT
           <>
             <div className="text-center mb-6">
