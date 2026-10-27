@@ -55,11 +55,11 @@ export default function ErrorBoundary({ error, reset }) {
             </button>
 
             <Link
-              href="/dashboard"
+              href="/donate"
               className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 text-xs font-bold transition"
             >
               <Home className="h-4 w-4" />
-              <span>Buka Dashboard</span>
+              <span>Coba Pembayaran</span>
             </Link>
           </div>
         </div>

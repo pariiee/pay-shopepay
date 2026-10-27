@@ -34,7 +34,8 @@ export async function GET() {
         qr_eye_ball: getSetting('qr_eye_ball', 'square'),
         qr_color: getSetting('qr_color', '#0f172a'),
         qr_logo: getSetting('qr_logo', ''),
-        qr_logo_bg: getSetting('qr_logo_bg', 'circle')
+        qr_logo_bg: getSetting('qr_logo_bg', 'circle'),
+        admin_token: getSetting('admin_token', process.env.ADMIN_TOKEN || 'alpay-sec-9a8b7c6d5e4f')
       }
     });
 }
@@ -65,6 +66,7 @@ export async function POST(req) {
     if (body.qr_color !== undefined) setSetting('qr_color', body.qr_color);
     if (body.qr_logo !== undefined) setSetting('qr_logo', body.qr_logo);
     if (body.qr_logo_bg !== undefined) setSetting('qr_logo_bg', body.qr_logo_bg);
+    if (body.admin_token !== undefined && body.admin_token.trim()) setSetting('admin_token', body.admin_token.trim());
 
     return NextResponse.json({ success: true, message: 'Pengaturan berhasil disimpan' });
   } catch (err) {

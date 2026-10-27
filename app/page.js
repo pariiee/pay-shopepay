@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { 
   ArrowRight, QrCode, Zap, RefreshCw, Smartphone, 
-  HeartHandshake, CheckCircle2, Lock, ArrowUpRight, Store
+  HeartHandshake, CheckCircle2, Store
 } from 'lucide-react';
 
 const LIME = '#d8f53b';
@@ -10,7 +10,7 @@ const card = 'rounded-[28px] bg-white p-6 sm:p-7 transition-all hover:shadow-xl 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-[#e9edf2] text-slate-900 flex flex-col justify-between">
-      {/* Header */}
+      {/* Header - No Dashboard Link */}
       <header className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-5 sm:px-6">
         <div className="flex items-center gap-2.5">
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 shadow-md shadow-slate-900/10" style={{ color: LIME }}>
@@ -20,13 +20,6 @@ export default function HomePage() {
         </div>
 
         <nav className="flex items-center gap-2">
-          <Link
-            href="/dashboard"
-            className="flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-900 hover:text-white"
-          >
-            <Lock className="h-3.5 w-3.5" />
-            <span>Dashboard</span>
-          </Link>
           <Link
             href="/donate"
             className="flex items-center gap-1.5 rounded-full px-5 py-2 text-xs font-bold transition hover:opacity-95 shadow-sm"
@@ -40,7 +33,7 @@ export default function HomePage() {
 
       {/* Main Container */}
       <main className="mx-auto w-full max-w-7xl space-y-6 px-4 py-6 sm:px-6 flex-1">
-        {/* Hero Card */}
+        {/* Hero Card - No Dashboard Button */}
         <div className="rounded-[36px] bg-slate-900 p-6 sm:p-12 text-white relative overflow-hidden shadow-2xl shadow-slate-900/10">
           <div className="relative z-10 max-w-2xl">
             <div className="inline-flex items-center gap-2 rounded-full bg-slate-800/90 px-3.5 py-1.5 text-xs font-semibold mb-6 border border-slate-700/50">
@@ -59,18 +52,11 @@ export default function HomePage() {
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Link
                 href="/donate"
-                className="inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-sm font-bold text-slate-950 transition hover:scale-[1.02] shadow-lg shadow-lime-300/10"
+                className="inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-bold text-slate-950 transition hover:scale-[1.02] shadow-lg shadow-lime-300/10"
                 style={{ background: LIME }}
               >
                 <HeartHandshake className="h-4 w-4" />
-                <span>Coba Bayar QRIS (Mulai Rp 100)</span>
-              </Link>
-              <Link
-                href="/dashboard"
-                className="inline-flex items-center gap-2 rounded-full bg-slate-800 hover:bg-slate-700 text-white px-5 py-3.5 text-sm font-semibold transition"
-              >
-                <span>Masuk Dashboard</span>
-                <ArrowUpRight className="h-4 w-4 text-slate-400" />
+                <span>Coba Bayar QRIS Sekarang</span>
               </Link>
             </div>
           </div>
@@ -79,7 +65,7 @@ export default function HomePage() {
           <div className="absolute -right-16 -bottom-16 w-80 h-80 rounded-full opacity-10 pointer-events-none" style={{ background: LIME, filter: 'blur(60px)' }} />
         </div>
 
-        {/* Bento Grid Features - Bahasa Ramah Awam */}
+        {/* Bento Grid Features */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className={card}>
             <div>
@@ -130,7 +116,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Showcase Banner Awam */}
+        {/* Showcase Banner */}
         <div className="rounded-[28px] bg-white p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 border border-slate-200/60 shadow-sm">
           <div className="flex items-center gap-4">
             <div className="h-12 w-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
@@ -152,15 +138,11 @@ export default function HomePage() {
         </div>
       </main>
 
-      {/* Footer */}
+      {/* Footer - No Dashboard Link */}
       <footer className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 text-center text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-300/60">
         <p>© 2026 Alpay • Solusi Pembayaran QRIS Praktis</p>
         <div className="flex items-center gap-3">
           <Link href="/donate" className="hover:text-slate-900 transition">Coba Bayar</Link>
-          <span>•</span>
-          <Link href="/dashboard" className="hover:text-slate-900 transition">Dashboard</Link>
-          <span>•</span>
-          <Link href="/docs" className="hover:text-slate-900 transition">Panduan API</Link>
         </div>
       </footer>
     </div>

@@ -28,6 +28,9 @@ export default function SettingsPage() {
   const [showKey, setShowKey] = useState(false);
   const [copiedKey, setCopiedKey] = useState(false);
   const [webhookUrls, setWebhookUrls] = useState(['']);
+  const [adminToken, setAdminToken] = useState('alpay-sec-9a8b7c6d5e4f');
+  const [showAdminToken, setShowAdminToken] = useState(false);
+  const [copiedAdminToken, setCopiedAdminToken] = useState(false);
 
   // Modular QR Customizer
   const [qrBody, setQrBody] = useState('square');
@@ -101,6 +104,7 @@ export default function SettingsPage() {
         if (urls.length === 0) urls = [''];
         setWebhookUrls(urls);
 
+        if (json.data.admin_token) setAdminToken(json.data.admin_token);
         if (json.data.qr_body) setQrBody(json.data.qr_body);
         if (json.data.qr_eye_frame) setQrEyeFrame(json.data.qr_eye_frame);
         if (json.data.qr_eye_ball) setQrEyeBall(json.data.qr_eye_ball);
@@ -164,6 +168,23 @@ export default function SettingsPage() {
     } catch (_) {}
   };
 
+  const handleGenerateAdminToken = () => {
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    let res = '';
+    for (let i = 0; i < 16; i++) {
+      res += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setAdminToken(`alpay-sec-${res}`);
+  };
+
+  const handleCopyAdminToken = async () => {
+    try {
+      await navigator.clipboard.writeText(adminToken);
+      setCopiedAdminToken(true);
+      setTimeout(() => setCopiedAdminToken(false), 2000);
+    } catch (_) {}
+  };
+
   const handleGenerateRandom = () => {
     const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
     let res = '';
@@ -191,6 +212,7 @@ export default function SettingsPage() {
           unique_code_enabled: uniqueEnabled,
           unique_code_max: uniqueMax,
           api_key: apiKey,
+          admin_token: adminToken,
           webhook_urls: cleanUrls,
           webhook_url: cleanUrls[0] || '',
           qr_body: qrBody,
@@ -463,6 +485,74 @@ export default function SettingsPage() {
                     <code className="block p-1.5 rounded-lg bg-white border border-slate-200 font-mono text-[10px] text-slate-800 truncate">
                       X-API-Key: {apiKey || `${PREFIX}YOUR_TOKEN`}
                     </code>
+                  </div>
+                </div>
+
+                {/* CARD 4: Token Akses Login Admin */}
+                <div className="rounded-[28px] bg-white p-5 sm:p-6 shadow-sm border border-slate-100 space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                    <div className="flex items-center gap-2">
+                      <KeyRound className="h-4 w-4 text-slate-600" />
+                      <h2 className="font-bold text-sm text-slate-900">Token Akses Login Admin</h2>
+                    </div>
+                    <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">
+                      1-Kolom Auth
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Token rahasia untuk login ke dashboard admin tanpa perlu username atau password.
+                  </p>
+
+                  {/* Active Admin Token Box */}
+                  <div className="rounded-2xl bg-slate-900 p-3.5 text-white space-y-1.5">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Current Login Token</span>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-mono text-xs tracking-wide overflow-x-auto select-all">
+                        {loading ? 'Memuat...' : showAdminToken ? adminToken : (adminToken ? `${adminToken.slice(0, 8)}••••••••••••` : 'Belum diatur')}
+                      </span>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setShowAdminToken(!showAdminToken)}
+                          className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition"
+                          title={showAdminToken ? 'Sembunyikan' : 'Tampilkan'}
+                        >
+                          {showAdminToken ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleCopyAdminToken}
+                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-semibold transition"
+                        >
+                          {copiedAdminToken ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
+                          <span>{copiedAdminToken ? 'Tersalin' : 'Salin'}</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Edit or Generate New Token */}
+                  <div className="space-y-1.5 pt-1">
+                    <label className="text-xs font-semibold text-slate-700 block">Ubah atau Acak Token Baru</label>
+                    <div className="flex items-center gap-1.5">
+                      <input
+                        type="text"
+                        placeholder="alpay-sec-..."
+                        value={adminToken}
+                        onChange={(e) => setAdminToken(e.target.value.trim())}
+                        className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono text-xs focus:outline-none focus:border-slate-900 transition"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleGenerateAdminToken}
+                        className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold shrink-0 transition"
+                        title="Generate Token Acak"
+                      >
+                        <Sparkles className="h-3.5 w-3.5" />
+                        <span>Acak</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

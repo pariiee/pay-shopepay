@@ -37,11 +37,11 @@ export default function NotFound() {
 
           <div className="pt-2 flex flex-col sm:flex-row items-center gap-2.5">
             <Link
-              href="/dashboard"
+              href="/donate"
               className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-slate-900 hover:bg-slate-800 text-white py-3 text-xs font-bold transition shadow-sm"
             >
               <Home className="h-4 w-4" style={{ color: LIME }} />
-              <span>Buka Dashboard</span>
+              <span>Coba Pembayaran</span>
             </Link>
 
             <Link

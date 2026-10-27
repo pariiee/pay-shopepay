@@ -1,26 +1,28 @@
 import { NextResponse } from 'next/server';
 import { createSessionToken } from '@/lib/auth';
+import { getSetting } from '@/lib/db';
 
 export async function POST(req) {
   try {
-    const { username, password } = await req.json();
+    const body = await req.json();
+    const token = (body.token || body.password || '').trim();
 
-    const expectedUser = process.env.ADMIN_USERNAME || 'admin';
-    const expectedPass = process.env.ADMIN_PASSWORD || 'ngecodeaje2026';
+    const expectedToken = getSetting('admin_token') || process.env.ADMIN_TOKEN || process.env.ADMIN_PASSWORD || 'alpay-sec-9a8b7c6d5e4f';
 
-    if (username !== expectedUser || password !== expectedPass) {
+    // Single-field Token authentication
+    if (!token || token !== expectedToken) {
       return NextResponse.json(
-        { success: false, error: 'Username atau password salah' },
+        { success: false, error: 'Token akses admin tidak valid' },
         { status: 401 }
       );
     }
 
-    const token = createSessionToken(username);
-    const res = NextResponse.json({ success: true });
+    const sessionToken = createSessionToken('admin');
+    const res = NextResponse.json({ success: true, message: 'Autentikasi berhasil' });
 
     res.cookies.set({
       name: 'pay_admin_session',
-      value: token,
+      value: sessionToken,
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
