@@ -15,10 +15,26 @@ export async function GET(req, { params }) {
     const id = filename.replace(/^qr-/, '').replace(/\.(png|svg|jpg|jpeg)$/i, '');
 
     const db = getDb();
-    const row = db.prepare('SELECT qris_string FROM donations WHERE id = ?').get(id);
+    const row = db.prepare('SELECT qris_string, status, created_at, expires_at FROM donations WHERE id = ?').get(id);
 
     if (!row || !row.qris_string) {
       return new NextResponse('QR Not Found', { status: 404 });
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+    const expiresAt = row.expires_at || (row.created_at + 300);
+    const isExpired = row.status === 'expired' || (row.status === 'pending' && now > expiresAt);
+    const isCancelled = row.status === 'cancelled';
+
+    // Otomatis tolak / hapus akses gambar jika transaksi sudah expired atau dibatalkan
+    if (isCancelled || isExpired) {
+      if (row.status === 'pending' && isExpired) {
+        db.prepare("UPDATE donations SET status = 'expired' WHERE id = ?").run(id);
+      }
+      return new NextResponse('QR Expired or Cancelled', { 
+        status: 404,
+        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' }
+      });
     }
 
     const qrBody = getSetting('qr_body', 'square');
@@ -56,7 +72,7 @@ export async function GET(req, { params }) {
         return new NextResponse(pngBuffer, {
           headers: {
             'Content-Type': 'image/png',
-            'Cache-Control': 'public, max-age=86400, immutable'
+            'Cache-Control': 'public, max-age=60'
           }
         });
       } catch (e) {
@@ -79,7 +95,7 @@ export async function GET(req, { params }) {
     return new NextResponse(fallbackPng, {
       headers: {
         'Content-Type': 'image/png',
-        'Cache-Control': 'public, max-age=86400, immutable'
+        'Cache-Control': 'public, max-age=60'
       }
     });
   } catch (err) {
