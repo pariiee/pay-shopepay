@@ -6,7 +6,7 @@ info:
   description: API Gateway Pembayaran Dinamis ShopeePay QRIS & Webhook Callback
   version: 1.0.0
 servers:
-  - url: https://pay.sisforhub.web.id
+  - url: https://pay.ghifari.biz.id
     description: Production Server
 
 paths:
