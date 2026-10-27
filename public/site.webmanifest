@@ -1,0 +1,26 @@
+{
+  "name": "Alpay — QRISKU JIER",
+  "short_name": "Alpay",
+  "description": "Scan bentar, bayar kelar. Saldo pamit, transaksi langsung aman bos 💸",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#e9edf2",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/alpay.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
