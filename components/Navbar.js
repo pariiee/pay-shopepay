@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   ArrowLeft, QrCode, ShieldCheck, AlertTriangle, LogOut, RotateCw,
@@ -9,6 +10,15 @@ import {
 const LIME = '#d8f53b';
 
 export default function Navbar({ active = '', storeName = 'Ngecode Aje', tokenOk = true, onRefresh, loading = false }) {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const handleLogout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
@@ -25,13 +35,22 @@ export default function Navbar({ active = '', storeName = 'Ngecode Aje', tokenOk
 
   return (
     <>
-      <header className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-5 sm:px-6">
-        <Link href="/dashboard" className="flex items-center gap-2.5 transition hover:opacity-90">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 shadow-md shadow-slate-900/10" style={{ color: LIME }}>
-            <QrCode className="h-5 w-5" />
-          </div>
-          <span className="text-xl font-extrabold tracking-tight text-slate-900">Alpay</span>
-        </Link>
+      <header className={`sticky top-0 z-40 w-full transition-all duration-300 ${
+        scrolled 
+          ? 'bg-[#e9edf2]/90 backdrop-blur-md shadow-sm border-b border-slate-200/80 py-2 sm:py-2.5' 
+          : 'bg-transparent py-4 sm:py-5'
+      }`}>
+        <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
+          <Link href="/dashboard" className="flex items-center gap-2.5 transition hover:opacity-90 shrink-0">
+            <div className={`flex items-center justify-center bg-slate-900 shadow-md shadow-slate-900/10 transition-all duration-300 ${
+              scrolled ? 'h-8 w-8 rounded-xl' : 'h-10 w-10 rounded-2xl'
+            }`} style={{ color: LIME }}>
+              <QrCode className={`transition-all duration-300 ${scrolled ? 'h-4 w-4' : 'h-5 w-5'}`} />
+            </div>
+            <span className={`font-extrabold tracking-tight text-slate-900 transition-all duration-300 ${
+              scrolled ? 'text-lg' : 'text-xl'
+            }`}>Alpay</span>
+          </Link>
 
         {/* Pill Navigation Bar */}
         <nav className="hidden items-center gap-1 rounded-full bg-white p-1 text-xs font-semibold md:flex shadow-sm">
@@ -86,6 +105,7 @@ export default function Navbar({ active = '', storeName = 'Ngecode Aje', tokenOk
           >
             <LogOut className="h-4 w-4" />
           </button>
+        </div>
         </div>
       </header>
 

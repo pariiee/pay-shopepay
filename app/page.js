@@ -1,3 +1,6 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   ArrowRight, QrCode, Zap, RefreshCw, Smartphone, 
@@ -8,27 +11,48 @@ const LIME = '#d8f53b';
 const card = 'rounded-[28px] bg-white p-6 sm:p-7 transition-all hover:shadow-xl hover:shadow-slate-900/5 border border-slate-100 flex flex-col justify-between';
 
 export default function HomePage() {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#e9edf2] text-slate-900 flex flex-col justify-between">
-      {/* Header - No Dashboard Link */}
-      <header className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-5 sm:px-6">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 shadow-md shadow-slate-900/10" style={{ color: LIME }}>
-            <QrCode className="h-5 w-5" />
+      {/* Header - Sticky Shrink on Scroll */}
+      <header className={`sticky top-0 z-40 w-full transition-all duration-300 ${
+        scrolled 
+          ? 'bg-[#e9edf2]/90 backdrop-blur-md shadow-sm border-b border-slate-200/80 py-2 sm:py-2.5' 
+          : 'bg-transparent py-4 sm:py-5'
+      }`}>
+        <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
+          <div className="flex items-center gap-2.5">
+            <div className={`flex items-center justify-center bg-slate-900 shadow-md shadow-slate-900/10 transition-all duration-300 ${
+              scrolled ? 'h-8 w-8 rounded-xl' : 'h-10 w-10 rounded-2xl'
+            }`} style={{ color: LIME }}>
+              <QrCode className={`transition-all duration-300 ${scrolled ? 'h-4 w-4' : 'h-5 w-5'}`} />
+            </div>
+            <span className={`font-extrabold tracking-tight text-slate-900 transition-all duration-300 ${
+              scrolled ? 'text-lg' : 'text-xl'
+            }`}>Alpay</span>
           </div>
-          <span className="text-xl font-extrabold tracking-tight text-slate-900">Alpay</span>
-        </div>
 
-        <nav className="flex items-center gap-2">
-          <Link
-            href="/donate"
-            className="flex items-center gap-1.5 rounded-full px-5 py-2 text-xs font-bold transition hover:opacity-95 shadow-sm"
-            style={{ background: LIME, color: '#0f172a' }}
-          >
-            <span>Coba Bayar</span>
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        </nav>
+          <nav className="flex items-center gap-2">
+            <Link
+              href="/donate"
+              className={`flex items-center gap-1.5 rounded-full font-bold transition hover:opacity-95 shadow-sm ${
+                scrolled ? 'px-4 py-1.5 text-[11px]' : 'px-5 py-2 text-xs'
+              }`}
+              style={{ background: LIME, color: '#0f172a' }}
+            >
+              <span>Coba Bayar</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </nav>
+        </div>
       </header>
 
       {/* Main Container */}
