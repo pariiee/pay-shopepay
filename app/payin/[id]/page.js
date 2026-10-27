@@ -1,5 +1,7 @@
 'use client';
 
+import AlpayLogo from '@/components/AlpayLogo';
+
 import { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import { 
@@ -205,9 +207,7 @@ export default function InvoicePage({ params }) {
       {/* Header */}
       <header className="mx-auto flex w-full max-w-lg items-center justify-between gap-3 pt-2">
         <Link href="/" className="flex items-center gap-2.5 transition hover:opacity-90">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 shadow-md shadow-slate-900/10" style={{ color: LIME }}>
-            <QrCode className="h-5 w-5" />
-          </div>
+          <AlpayLogo className="h-10 w-10 shadow-md shadow-slate-900/10" />
           <span className="text-xl font-extrabold tracking-tight text-slate-900">Alpay</span>
         </Link>
         <button

@@ -1,5 +1,7 @@
 'use client';
 
+import AlpayLogo from '@/components/AlpayLogo';
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -70,9 +72,7 @@ export default function MacukPage() {
       {/* Header */}
       <header className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-2 py-2 sm:px-6">
         <Link href="/" className="flex items-center gap-2.5 transition hover:opacity-90">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 shadow-md shadow-slate-900/10" style={{ color: LIME }}>
-            <QrCode className="h-5 w-5" />
-          </div>
+          <AlpayLogo className="h-10 w-10 shadow-md shadow-slate-900/10" />
           <span className="text-xl font-extrabold tracking-tight text-slate-900">Alpay</span>
         </Link>
       </header>

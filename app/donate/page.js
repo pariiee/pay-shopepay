@@ -1,5 +1,7 @@
 'use client';
 
+import AlpayLogo from '@/components/AlpayLogo';
+
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -174,9 +176,7 @@ export default function DonasiPage() {
       {/* Header */}
       <header className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-5 sm:px-6">
         <Link href="/" className="flex items-center gap-2.5 transition hover:opacity-90">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 shadow-md shadow-slate-900/10" style={{ color: LIME }}>
-            <QrCode className="h-5 w-5" />
-          </div>
+          <AlpayLogo className="h-10 w-10 shadow-md shadow-slate-900/10" />
           <span className="text-xl font-extrabold tracking-tight text-slate-900">Alpay</span>
         </Link>
         <div className="flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 text-xs font-semibold shadow-sm">

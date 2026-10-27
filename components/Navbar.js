@@ -1,5 +1,7 @@
 'use client';
 
+import AlpayLogo from '@/components/AlpayLogo';
+
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
@@ -42,11 +44,9 @@ export default function Navbar({ active = '', storeName = 'Ngecode Aje', tokenOk
       }`}>
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
           <Link href="/dashboard" className="flex items-center gap-2.5 transition hover:opacity-90 shrink-0">
-            <div className={`flex items-center justify-center bg-slate-900 shadow-md shadow-slate-900/10 transition-all duration-300 ${
-              scrolled ? 'h-8 w-8 rounded-xl' : 'h-10 w-10 rounded-2xl'
-            }`} style={{ color: LIME }}>
-              <QrCode className={`transition-all duration-300 ${scrolled ? 'h-4 w-4' : 'h-5 w-5'}`} />
-            </div>
+            <AlpayLogo className={`transition-all duration-300 shadow-md shadow-slate-900/10 ${
+              scrolled ? 'h-8 w-8' : 'h-10 w-10'
+            }`} />
             <span className={`font-extrabold tracking-tight text-slate-900 transition-all duration-300 ${
               scrolled ? 'text-lg' : 'text-xl'
             }`}>Alpay</span>
