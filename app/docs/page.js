@@ -3,29 +3,47 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
-  ArrowLeft, BookOpen, KeyRound, Check, Copy, 
-  ChevronDown, ChevronRight, Play
+  BookOpen, KeyRound, Check, Copy, 
+  ChevronDown, ChevronRight, Play, X, ShieldCheck, Terminal, AlertCircle
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 
 const LIME = '#d8f53b';
 
 export default function DocsPage() {
-  const [openEndpoint, setOpenEndpoint] = useState('create');
+  const [openEndpoint, setOpenEndpoint] = useState('cancel'); // default open cancel to showcase
   const [copied, setCopied] = useState(null);
-  const [tryOutActive, setTryOutActive] = useState(false);
-  const [testAmount, setTestAmount] = useState('25000');
-  const [testFee, setTestFee] = useState('1000');
-  const [testCustomer, setTestCustomer] = useState('Pak Tester');
-  const [testApiKey, setTestApiKey] = useState('al-ez7dpzxdh6');
-  const [testLoading, setTestLoading] = useState(false);
-  const [testResult, setTestResult] = useState(null);
+  const [apiKey, setApiKey] = useState('al-ez7dpzxdh6');
+
+  // Interactive Try It Out state for Endpoint 1: Create
+  const [createAmount, setCreateAmount] = useState('25000');
+  const [createFee, setCreateFee] = useState('0');
+  const [createCustomer, setCreateCustomer] = useState('Pak Budi');
+  const [createNote, setCreateNote] = useState('Pembelian Paket');
+  const [createLoading, setCreateLoading] = useState(false);
+  const [createResult, setCreateResult] = useState(null);
+  const [createLatency, setCreateLatency] = useState(0);
+
+  // Interactive Try It Out state for Endpoint 2: Status
+  const [statusTrxId, setStatusTrxId] = useState('trhczp');
+  const [statusLoading, setStatusLoading] = useState(false);
+  const [statusResult, setStatusResult] = useState(null);
+  const [statusLatency, setStatusLatency] = useState(0);
+
+  // Interactive Try It Out state for Endpoint 3: Cancel (from image_200902.png)
+  const [cancelTrxId, setCancelTrxId] = useState('trhczp');
+  const [cancelLoading, setCancelLoading] = useState(false);
+  const [cancelResult, setCancelResult] = useState(null);
+  const [cancelLatency, setCancelLatency] = useState(0);
+
+  // Webhook Language Tab (from image_bffe86.png: Node.js, PHP, Python)
+  const [webhookLang, setWebhookLang] = useState('python');
 
   useEffect(() => {
     fetch('/api/settings/active-key')
       .then(res => res.json())
       .then(data => {
-        if (data?.success && data.api_key) setTestApiKey(data.api_key);
+        if (data?.success && data.api_key) setApiKey(data.api_key);
       })
       .catch(() => {});
   }, []);
@@ -38,49 +56,94 @@ export default function DocsPage() {
     } catch (_) {}
   };
 
-  const handleTestCreate = async () => {
-    setTestLoading(true);
-    setTestResult(null);
+  const toggleEndpoint = (key) => {
+    setOpenEndpoint(openEndpoint === key ? null : key);
+  };
+
+  // Run Create Payment
+  const runCreate = async () => {
+    setCreateLoading(true);
+    setCreateResult(null);
+    const start = performance.now();
     try {
       const res = await fetch('/payments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-API-Key': testApiKey
+          'X-API-Key': apiKey
         },
         body: JSON.stringify({
-          amount: Number(testAmount) || 1000,
-          fee: Number(testFee) || 0,
-          customer_name: testCustomer,
+          amount: Number(createAmount) || 1000,
+          fee: Number(createFee) || 0,
+          customer_name: createCustomer,
+          note: createNote,
           valid_minutes: 5
         })
       });
       const data = await res.json();
-      setTestResult({ status: res.status, data });
+      setCreateLatency(Math.round(performance.now() - start));
+      setCreateResult({ status: res.status, data });
     } catch (err) {
-      setTestResult({ status: 500, data: { error: err.message } });
+      setCreateLatency(Math.round(performance.now() - start));
+      setCreateResult({ status: 500, data: { success: false, message: err.message } });
     } finally {
-      setTestLoading(false);
+      setCreateLoading(false);
     }
   };
 
-  const toggleEndpoint = (key) => {
-    setOpenEndpoint(openEndpoint === key ? null : key);
+  // Run Status Check
+  const runStatus = async () => {
+    setStatusLoading(true);
+    setStatusResult(null);
+    const start = performance.now();
+    try {
+      const res = await fetch(`/payments/${statusTrxId.trim() || 'test'}/status`);
+      const data = await res.json();
+      setStatusLatency(Math.round(performance.now() - start));
+      setStatusResult({ status: res.status, data });
+    } catch (err) {
+      setStatusLatency(Math.round(performance.now() - start));
+      setStatusResult({ status: 500, data: { success: false, message: err.message } });
+    } finally {
+      setStatusLoading(false);
+    }
+  };
+
+  // Run Cancel Transaction
+  const runCancel = async () => {
+    setCancelLoading(true);
+    setCancelResult(null);
+    const start = performance.now();
+    try {
+      const res = await fetch(`/payments/${cancelTrxId.trim() || 'trhczp'}/cancel`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': apiKey
+        }
+      });
+      const data = await res.json();
+      setCancelLatency(Math.round(performance.now() - start));
+      setCancelResult({ status: res.status, data });
+    } catch (err) {
+      setCancelLatency(Math.round(performance.now() - start));
+      setCancelResult({ status: 500, data: { success: false, message: err.message } });
+    } finally {
+      setCancelLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 pb-28">
-      {/* Universal Navbar */}
       <Navbar active="docs" />
 
-      {/* Main Container */}
       <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 space-y-8">
         {/* Payments Category Header */}
         <div className="flex items-center justify-between border-b border-slate-200 pb-4">
           <div>
             <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">Payments</h1>
             <p className="mt-1 text-xs sm:text-sm text-slate-500">
-              API untuk pembuatan invoice tagihan, dynamic QRIS, dan cek status mutasi.
+              API untuk generate dynamic QRIS, pengecekan status transaksi, dan pembatalan invoice.
             </p>
           </div>
           <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600 border border-slate-200">
@@ -88,9 +151,10 @@ export default function DocsPage() {
           </span>
         </div>
 
-        {/* ENDPOINT 1: POST /payments */}
+        {/* ============================================================== */}
+        {/* ENDPOINT 1: POST /payments (Create Payment) */}
+        {/* ============================================================== */}
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition">
-          {/* Endpoint Bar */}
           <div 
             onClick={() => toggleEndpoint('create')}
             className="flex cursor-pointer items-center justify-between px-5 py-4 hover:bg-slate-50/80 transition"
@@ -100,7 +164,7 @@ export default function DocsPage() {
                 POST
               </span>
               <code className="font-mono text-sm font-bold text-slate-900">/payments</code>
-              <span className="text-sm font-medium text-slate-600 hidden sm:inline">•</span>
+              <span className="text-sm font-medium text-slate-400 hidden sm:inline">•</span>
               <span className="text-sm font-semibold text-slate-700">Create payment</span>
             </div>
 
@@ -116,20 +180,15 @@ export default function DocsPage() {
             </div>
           </div>
 
-          {/* Expanded Content */}
           {openEndpoint === 'create' && (
             <div className="border-t border-slate-100 p-5 sm:p-6 space-y-6 text-sm">
               <p className="text-slate-600 leading-relaxed text-xs sm:text-sm">
-                Creates a payment valid for 5 minutes. The QR code is generated automatically from the merchant\'s ShopeePay QRIS. Returns <code>payment_url</code> + dynamic QR image string.
+                Creates a payment valid for 5 minutes. The QR code is generated automatically from the merchant's ShopeePay QRIS. Returns <code>payment_url</code> + dynamic QR image string.
               </p>
 
-              {/* REQUEST BODY TABLE */}
+              {/* PARAMETER TABLE */}
               <div>
-                <div className="mb-3 flex items-center justify-between">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">REQUEST BODY</h3>
-                  <span className="font-mono text-xs text-slate-400">application/json</span>
-                </div>
-
+                <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">PARAMETER</h3>
                 <div className="overflow-x-auto rounded-xl border border-slate-200">
                   <table className="w-full text-left text-xs">
                     <thead className="bg-slate-50 font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">
@@ -144,169 +203,134 @@ export default function DocsPage() {
                     <tbody className="divide-y divide-slate-100 font-normal text-slate-700">
                       <tr>
                         <td className="px-4 py-3 font-mono font-bold text-slate-900">amount</td>
-                        <td className="px-4 py-3 font-mono text-slate-500">body</td>
+                        <td className="px-4 py-3 font-mono"><span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600">body</span></td>
                         <td className="px-4 py-3 font-mono text-purple-600 font-semibold">number</td>
-                        <td className="px-4 py-3 font-bold text-rose-600">yes</td>
-                        <td className="px-4 py-3 text-slate-600">Payment amount, 1 — 100.000.000.</td>
+                        <td className="px-4 py-3"><span className="px-2 py-0.5 rounded bg-rose-50 text-rose-600 font-bold text-[11px]">yes</span></td>
+                        <td className="px-4 py-3 text-slate-600">Payment amount in IDR (min 100).</td>
                       </tr>
                       <tr>
                         <td className="px-4 py-3 font-mono font-bold text-slate-900">fee</td>
-                        <td className="px-4 py-3 font-mono text-slate-500">body</td>
+                        <td className="px-4 py-3 font-mono"><span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600">body</span></td>
                         <td className="px-4 py-3 font-mono text-purple-600 font-semibold">number</td>
-                        <td className="px-4 py-3 text-slate-400">no</td>
-                        <td className="px-4 py-3 text-slate-600">Additional fee charged to the customer (optional, default 0).</td>
+                        <td className="px-4 py-3"><span className="px-2 py-0.5 rounded bg-slate-100 text-slate-400 font-bold text-[11px]">no</span></td>
+                        <td className="px-4 py-3 text-slate-600">Additional admin fee (optional, default 0).</td>
                       </tr>
                       <tr>
                         <td className="px-4 py-3 font-mono font-bold text-slate-900">customer_name</td>
-                        <td className="px-4 py-3 font-mono text-slate-500">body</td>
+                        <td className="px-4 py-3 font-mono"><span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600">body</span></td>
                         <td className="px-4 py-3 font-mono text-blue-600 font-semibold">string</td>
-                        <td className="px-4 py-3 text-slate-400">no</td>
-                        <td className="px-4 py-3 text-slate-600">Customer or donor name (default: &quot;Hamba Allah&quot;).</td>
+                        <td className="px-4 py-3"><span className="px-2 py-0.5 rounded bg-slate-100 text-slate-400 font-bold text-[11px]">no</span></td>
+                        <td className="px-4 py-3 text-slate-600">Customer or donor name.</td>
                       </tr>
                       <tr>
                         <td className="px-4 py-3 font-mono font-bold text-slate-900">note</td>
-                        <td className="px-4 py-3 font-mono text-slate-500">body</td>
+                        <td className="px-4 py-3 font-mono"><span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600">body</span></td>
                         <td className="px-4 py-3 font-mono text-blue-600 font-semibold">string</td>
-                        <td className="px-4 py-3 text-slate-400">no</td>
-                        <td className="px-4 py-3 text-slate-600">Transaction note / message (optional).</td>
-                      </tr>
-                      <tr>
-                        <td className="px-4 py-3 font-mono font-bold text-slate-900">valid_minutes</td>
-                        <td className="px-4 py-3 font-mono text-slate-500">body</td>
-                        <td className="px-4 py-3 font-mono text-purple-600 font-semibold">number</td>
-                        <td className="px-4 py-3 text-slate-400">no</td>
-                        <td className="px-4 py-3 text-slate-600">Invoice validity duration in minutes (default: 5).</td>
+                        <td className="px-4 py-3"><span className="px-2 py-0.5 rounded bg-slate-100 text-slate-400 font-bold text-[11px]">no</span></td>
+                        <td className="px-4 py-3 text-slate-600">Transaction note / message.</td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
               </div>
 
-              {/* Payload Sample Code */}
-              <div className="relative rounded-xl bg-slate-950 p-4 font-mono text-xs text-slate-200">
-                <button
-                  onClick={() => copyCode('sample_json', `{\n  "amount": 25000,\n  "fee": 1000,\n  "customer_name": "Pak Tester",\n  "note": "Pembelian Paket VIP",\n  "valid_minutes": 5\n}`)}
-                  className="absolute right-3 top-3 rounded-md bg-slate-800 p-1.5 text-slate-400 hover:text-white transition"
-                  title="Copy JSON"
-                >
-                  {copied === 'sample_json' ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
-                </button>
-                <pre className="text-slate-300">
-{`{
-  "amount": 25000,
-  "fee": 1000,
-  "customer_name": "Pak Tester",
-  "note": "Pembelian Paket VIP",
-  "valid_minutes": 5
-}`}
-                </pre>
-              </div>
-
-              {/* RESPONSES SECTION */}
+              {/* RESPONSES */}
               <div>
                 <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">RESPONSES</h3>
                 <div className="space-y-2">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 rounded-xl bg-slate-50 p-3 border border-slate-200/80">
-                    <div className="flex items-center gap-2">
-                      <span className="rounded bg-emerald-100 px-2 py-0.5 font-mono text-xs font-bold text-emerald-800">200</span>
-                      <span className="font-semibold text-xs text-slate-900">Transaction created</span>
+                    <div className="flex items-center gap-2.5">
+                      <span className="rounded-md bg-emerald-600 px-2 py-0.5 font-mono text-xs font-bold text-white">200</span>
+                      <span className="font-semibold text-slate-800 text-xs sm:text-sm">Payment created — (returns id, payment_url, qr_image, expires_at)</span>
                     </div>
-                    <span className="font-mono text-[11px] text-slate-500">
-                      id, payment_url, status, amount, base_amount, fee, unique_code, qr_string, qr_image, expires_at
-                    </span>
                   </div>
-
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 rounded-xl bg-slate-50 p-3 border border-slate-200/80">
-                    <div className="flex items-center gap-2">
-                      <span className="rounded bg-amber-100 px-2 py-0.5 font-mono text-xs font-bold text-amber-800">400</span>
-                      <span className="font-semibold text-xs text-slate-900">Invalid amount or parameters</span>
-                    </div>
-                    <span className="font-mono text-[11px] text-slate-500">
-                      amount minimal Rp 100
-                    </span>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 rounded-xl bg-slate-50 p-3 border border-slate-200/80">
-                    <div className="flex items-center gap-2">
-                      <span className="rounded bg-rose-100 px-2 py-0.5 font-mono text-xs font-bold text-rose-800">401</span>
-                      <span className="font-semibold text-xs text-slate-900">Unauthorized</span>
-                    </div>
-                    <span className="font-mono text-[11px] text-slate-500">
-                      Invalid or missing X-API-Key
-                    </span>
+                  <div className="flex items-center gap-2.5 rounded-xl bg-slate-50 p-3 border border-slate-200/80">
+                    <span className="rounded-md bg-rose-600 px-2 py-0.5 font-mono text-xs font-bold text-white">401</span>
+                    <span className="text-slate-700 text-xs">Invalid or missing X-API-Key</span>
                   </div>
                 </div>
               </div>
 
-              {/* TRY IT OUT BUTTON & CONSOLE */}
-              <div className="border-t border-slate-100 pt-4">
+              {/* TRY IT OUT CONSOLE */}
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-5 space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                    <Terminal className="h-4 w-4" /> TRY IT OUT
+                  </span>
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="font-mono text-slate-600">{apiKey.slice(0, 8)}..</span>
+                  </div>
+                </div>
+
+                {/* Live cURL Preview */}
+                <div className="relative rounded-xl bg-slate-950 p-4 font-mono text-xs text-slate-200">
+                  <pre className="text-slate-300 overflow-x-auto whitespace-pre-wrap">{`curl -X 'POST' 'https://pay.sisforhub.web.id/payments' \\
+  -H 'accept: application/json' \\
+  -H 'Content-Type: application/json' \\
+  -H 'X-API-Key: ${apiKey}' \\
+  -d '{
+    "amount": ${createAmount || 1000},
+    "customer_name": "${createCustomer}",
+    "note": "${createNote}"
+  }'`}</pre>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-700 block mb-1">Nominal (amount)</label>
+                    <input
+                      type="number"
+                      value={createAmount}
+                      onChange={(e) => setCreateAmount(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 font-mono text-xs focus:outline-none focus:border-slate-900"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-700 block mb-1">Nama Customer</label>
+                    <input
+                      type="text"
+                      value={createCustomer}
+                      onChange={(e) => setCreateCustomer(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs focus:outline-none focus:border-slate-900"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-700 block mb-1">Catatan</label>
+                    <input
+                      type="text"
+                      value={createNote}
+                      onChange={(e) => setCreateNote(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs focus:outline-none focus:border-slate-900"
+                    />
+                  </div>
+                </div>
+
                 <button
-                  onClick={() => setTryOutActive(!tryOutActive)}
-                  className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white hover:bg-slate-800 transition"
+                  onClick={runCreate}
+                  disabled={createLoading}
+                  className="rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-5 py-2.5 transition flex items-center gap-1.5 shadow-sm disabled:opacity-50"
                 >
-                  <Play className="h-3.5 w-3.5 fill-current" style={{ color: LIME }} />
-                  <span>{tryOutActive ? 'Close Console' : 'Try it out'}</span>
+                  <Play className={`h-3.5 w-3.5 fill-current ${createLoading ? 'animate-spin' : ''}`} />
+                  <span>{createLoading ? 'Executing...' : '▶ Run'}</span>
                 </button>
 
-                {tryOutActive && (
-                  <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                      <div>
-                        <label className="block font-semibold text-slate-700 mb-1">X-API-Key Header</label>
-                        <input
-                          type="text"
-                          value={testApiKey}
-                          onChange={(e) => setTestApiKey(e.target.value)}
-                          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-slate-900"
-                        />
+                {/* macOS Terminal Response Window */}
+                {createResult && (
+                  <div className="rounded-xl bg-slate-950 overflow-hidden text-xs font-mono shadow-md">
+                    <div className="flex items-center justify-between px-4 py-2 bg-slate-900 border-b border-slate-800">
+                      <div className="flex items-center gap-1.5">
+                        <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f56]" />
+                        <span className="h-2.5 w-2.5 rounded-full bg-[#ffbd2e]" />
+                        <span className="h-2.5 w-2.5 rounded-full bg-[#27c93f]" />
                       </div>
-                      <div>
-                        <label className="block font-semibold text-slate-700 mb-1">Amount (Rp)</label>
-                        <input
-                          type="number"
-                          value={testAmount}
-                          onChange={(e) => setTestAmount(e.target.value)}
-                          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-slate-900"
-                        />
-                      </div>
-                      <div>
-                        <label className="block font-semibold text-slate-700 mb-1">Fee (Rp - opsional)</label>
-                        <input
-                          type="number"
-                          value={testFee}
-                          onChange={(e) => setTestFee(e.target.value)}
-                          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-slate-900"
-                        />
-                      </div>
-                      <div>
-                        <label className="block font-semibold text-slate-700 mb-1">Customer Name</label>
-                        <input
-                          type="text"
-                          value={testCustomer}
-                          onChange={(e) => setTestCustomer(e.target.value)}
-                          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-slate-900"
-                        />
-                      </div>
+                      <span className={`text-[11px] font-bold ${createResult.status === 200 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                        HTTP {createResult.status} • {createLatency} ms
+                      </span>
                     </div>
-
-                    <button
-                      onClick={handleTestCreate}
-                      disabled={testLoading}
-                      className="rounded-lg bg-emerald-600 px-4 py-2 font-bold text-xs text-white hover:bg-emerald-700 transition disabled:opacity-50"
-                    >
-                      {testLoading ? 'Executing...' : 'Execute POST /payments'}
-                    </button>
-
-                    {testResult && (
-                      <div className="rounded-lg bg-slate-950 p-3 font-mono text-xs text-slate-200 overflow-x-auto">
-                        <div className="flex items-center gap-2 mb-2 pb-2 border-b border-slate-800">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${testResult.status === 200 ? 'bg-emerald-900 text-emerald-300' : 'bg-rose-900 text-rose-300'}`}>
-                            Status: {testResult.status}
-                          </span>
-                        </div>
-                        <pre>{JSON.stringify(testResult.data, null, 2)}</pre>
-                      </div>
-                    )}
+                    <pre className="p-4 text-slate-300 overflow-x-auto max-h-64">
+                      {JSON.stringify(createResult.data, null, 2)}
+                    </pre>
                   </div>
                 )}
               </div>
@@ -314,7 +338,9 @@ export default function DocsPage() {
           )}
         </div>
 
+        {/* ============================================================== */}
         {/* ENDPOINT 2: GET /payments/:trxid/status */}
+        {/* ============================================================== */}
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition">
           <div 
             onClick={() => toggleEndpoint('status')}
@@ -325,13 +351,13 @@ export default function DocsPage() {
                 GET
               </span>
               <code className="font-mono text-sm font-bold text-slate-900">/payments/:trxid/status</code>
-              <span className="text-sm font-medium text-slate-600 hidden sm:inline">•</span>
+              <span className="text-sm font-medium text-slate-400 hidden sm:inline">•</span>
               <span className="text-sm font-semibold text-slate-700">Check payment status</span>
             </div>
 
             <div className="flex items-center gap-2">
               <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 font-mono text-[11px] font-bold text-slate-600 border border-slate-200">
-                <KeyRound className="h-3 w-3" /> API KEY
+                PUBLIC
               </span>
               {openEndpoint === 'status' ? (
                 <ChevronDown className="h-4 w-4 text-slate-400" />
@@ -344,79 +370,120 @@ export default function DocsPage() {
           {openEndpoint === 'status' && (
             <div className="border-t border-slate-100 p-5 sm:p-6 space-y-6 text-sm">
               <p className="text-slate-600 leading-relaxed text-xs sm:text-sm">
-                Cek status real-time transaksi tagihan berdasarkan parameter <code>:trxid</code>. Otomatis memeriksa mutasi ShopeePay Partner dan menandai lunas/expired.
+                Cek status real-time pembayaran dari ID transaksi unik. Mengembalikan status <code>pending</code>, <code>paid</code>, atau <code>expired</code>.
               </p>
 
+              {/* PARAMETER TABLE */}
               <div>
-                <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">PATH PARAMETERS</h3>
+                <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">PARAMETER</h3>
                 <div className="overflow-x-auto rounded-xl border border-slate-200">
                   <table className="w-full text-left text-xs">
                     <thead className="bg-slate-50 font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">
                       <tr>
                         <th className="px-4 py-2.5">NAME</th>
+                        <th className="px-4 py-2.5">LOCATION</th>
                         <th className="px-4 py-2.5">TYPE</th>
                         <th className="px-4 py-2.5">REQUIRED</th>
                         <th className="px-4 py-2.5">DESCRIPTION</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 text-slate-700">
+                    <tbody className="divide-y divide-slate-100 font-normal text-slate-700">
                       <tr>
-                        <td className="px-4 py-3 font-mono font-bold text-slate-900">:trxid</td>
-                        <td className="px-4 py-3 font-mono text-blue-600">string</td>
-                        <td className="px-4 py-3 font-bold text-rose-600">yes</td>
-                        <td className="px-4 py-3 text-slate-600">ID transaksi unik tagihan (contoh: <code>26114d00</code>).</td>
+                        <td className="px-4 py-3 font-mono font-bold text-slate-900">trxid</td>
+                        <td className="px-4 py-3 font-mono"><span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600">path</span></td>
+                        <td className="px-4 py-3 font-mono text-purple-600 font-semibold">string</td>
+                        <td className="px-4 py-3"><span className="px-2 py-0.5 rounded bg-rose-50 text-rose-600 font-bold text-[11px]">yes</span></td>
+                        <td className="px-4 py-3 text-slate-600">Transaction ID to check.</td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
               </div>
 
-              {/* Sample Response */}
+              {/* RESPONSES */}
               <div>
-                <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">RESPONSE SAMPLE (200 OK)</h3>
-                <div className="relative rounded-xl bg-slate-950 p-4 font-mono text-xs text-slate-200">
-                  <button
-                    onClick={() => copyCode('status_json', `{\n  "success": true,\n  "paid": true,\n  "status": "paid",\n  "data": {\n    "id": "26114d00",\n    "customer_name": "Pak Tester",\n    "base_amount": 25000,\n    "fee": 1000,\n    "unique_code": 12,\n    "amount": 26012,\n    "issuer": "DANA",\n    "transaction_id": "101196058878630531",\n    "paid_at": 1792998022\n  }\n}`)}
-                    className="absolute right-3 top-3 rounded-md bg-slate-800 p-1.5 text-slate-400 hover:text-white transition"
-                  >
-                    {copied === 'status_json' ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
-                  </button>
-                  <pre className="text-slate-300">
-{`{
-  "success": true,
-  "paid": true,
-  "status": "paid",
-  "data": {
-    "id": "26114d00",
-    "customer_name": "Pak Tester",
-    "base_amount": 25000,
-    "fee": 1000,
-    "unique_code": 12,
-    "amount": 26012,
-    "issuer": "DANA",
-    "transaction_id": "101196058878630531",
-    "paid_at": 1792998022
-  }
-}`}
-                  </pre>
+                <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">RESPONSES</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2.5 rounded-xl bg-slate-50 p-3 border border-slate-200/80">
+                    <span className="rounded-md bg-emerald-600 px-2 py-0.5 font-mono text-xs font-bold text-white">200</span>
+                    <span className="text-slate-800 text-xs font-semibold">Returns {`{ success: true, paid: boolean, status: string }`}</span>
+                  </div>
+                  <div className="flex items-center gap-2.5 rounded-xl bg-slate-50 p-3 border border-slate-200/80">
+                    <span className="rounded-md bg-rose-600 px-2 py-0.5 font-mono text-xs font-bold text-white">404</span>
+                    <span className="text-slate-700 text-xs">Transaction not found</span>
+                  </div>
                 </div>
+              </div>
+
+              {/* TRY IT OUT CONSOLE */}
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-5 space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                    <Terminal className="h-4 w-4" /> TRY IT OUT
+                  </span>
+                </div>
+
+                <div className="relative rounded-xl bg-slate-950 p-4 font-mono text-xs text-slate-200">
+                  <pre className="text-slate-300">{`curl -X 'GET' 'https://pay.sisforhub.web.id/payments/${statusTrxId.trim() || ':trxid'}/status' \\
+  -H 'accept: application/json'`}</pre>
+                </div>
+
+                <div className="max-w-xs">
+                  <label className="text-[11px] font-bold text-slate-700 block mb-1">Transaction ID (:trxid)</label>
+                  <input
+                    type="text"
+                    value={statusTrxId}
+                    onChange={(e) => setStatusTrxId(e.target.value)}
+                    placeholder="Contoh: 26114d00"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 font-mono text-xs focus:outline-none focus:border-slate-900"
+                  />
+                </div>
+
+                <button
+                  onClick={runStatus}
+                  disabled={statusLoading}
+                  className="rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-5 py-2.5 transition flex items-center gap-1.5 shadow-sm disabled:opacity-50"
+                >
+                  <Play className={`h-3.5 w-3.5 fill-current ${statusLoading ? 'animate-spin' : ''}`} />
+                  <span>{statusLoading ? 'Executing...' : '▶ Run'}</span>
+                </button>
+
+                {statusResult && (
+                  <div className="rounded-xl bg-slate-950 overflow-hidden text-xs font-mono shadow-md">
+                    <div className="flex items-center justify-between px-4 py-2 bg-slate-900 border-b border-slate-800">
+                      <div className="flex items-center gap-1.5">
+                        <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f56]" />
+                        <span className="h-2.5 w-2.5 rounded-full bg-[#ffbd2e]" />
+                        <span className="h-2.5 w-2.5 rounded-full bg-[#27c93f]" />
+                      </div>
+                      <span className={`text-[11px] font-bold ${statusResult.status === 200 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                        HTTP {statusResult.status} • {statusLatency} ms
+                      </span>
+                    </div>
+                    <pre className="p-4 text-slate-300 overflow-x-auto max-h-64">
+                      {JSON.stringify(statusResult.data, null, 2)}
+                    </pre>
+                  </div>
+                )}
               </div>
             </div>
           )}
         </div>
 
-        {/* ENDPOINT 3: POST /payments/:trxid/cancel */}
+        {/* ============================================================== */}
+        {/* ENDPOINT 3: POST /payments/:trxid/cancel (MATCHING image_200902.png) */}
+        {/* ============================================================== */}
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition">
           <div 
             onClick={() => toggleEndpoint('cancel')}
             className="flex cursor-pointer items-center justify-between px-5 py-4 hover:bg-slate-50/80 transition"
           >
             <div className="flex flex-wrap items-center gap-3">
-              <span className="rounded-md bg-rose-500/10 px-2.5 py-1 font-mono text-xs font-bold text-rose-700 border border-rose-500/20">
+              <span className="rounded-md bg-emerald-500/10 px-2.5 py-1 font-mono text-xs font-bold text-emerald-700 border border-emerald-500/20">
                 POST
               </span>
               <code className="font-mono text-sm font-bold text-slate-900">/payments/:trxid/cancel</code>
-              <span className="text-sm font-medium text-slate-600 hidden sm:inline">•</span>
+              <span className="text-sm font-medium text-slate-400 hidden sm:inline">•</span>
               <span className="text-sm font-semibold text-slate-700">Cancel transaction</span>
             </div>
 
@@ -433,18 +500,144 @@ export default function DocsPage() {
           </div>
 
           {openEndpoint === 'cancel' && (
-            <div className="border-t border-slate-100 p-5 sm:p-6 space-y-4 text-sm">
+            <div className="border-t border-slate-100 p-5 sm:p-6 space-y-6 text-sm">
               <p className="text-slate-600 leading-relaxed text-xs sm:text-sm">
-                Membatalkan transaksi pembayaran pending secara manual sehingga tidak dapat dibayar lagi.
+                Cancels a pending transaction. Cannot cancel transactions that are already paid or expired.
               </p>
-              <div className="rounded-xl bg-slate-950 p-4 font-mono text-xs text-slate-200">
-                <pre>{`curl -X POST "https://pay.sisforhub.web.id/payments/26114d00/cancel"`}</pre>
+
+              {/* PARAMETER TABLE (Exact match to image_200902.png) */}
+              <div>
+                <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">PARAMETER</h3>
+                <div className="overflow-x-auto rounded-xl border border-slate-200">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50 font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                      <tr>
+                        <th className="px-4 py-2.5">NAME</th>
+                        <th className="px-4 py-2.5">LOCATION</th>
+                        <th className="px-4 py-2.5">TYPE</th>
+                        <th className="px-4 py-2.5">REQUIRED</th>
+                        <th className="px-4 py-2.5">DESCRIPTION</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 font-normal text-slate-700">
+                      <tr>
+                        <td className="px-4 py-3 font-mono font-bold text-slate-900">trxid</td>
+                        <td className="px-4 py-3 font-mono"><span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600">path</span></td>
+                        <td className="px-4 py-3 font-mono text-purple-600 font-semibold">string</td>
+                        <td className="px-4 py-3"><span className="px-2 py-0.5 rounded bg-rose-50 text-rose-600 font-bold text-[11px]">yes</span></td>
+                        <td className="px-4 py-3 text-slate-600">Transaction ID to cancel</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* RESPONSES (Exact match to image_200902.png) */}
+              <div>
+                <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">RESPONSES</h3>
+                <div className="space-y-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 rounded-xl bg-slate-50 p-3 border border-slate-200/80">
+                    <div className="flex items-center gap-2.5">
+                      <span className="rounded-md bg-emerald-600 px-2 py-0.5 font-mono text-xs font-bold text-white">200</span>
+                      <span className="font-semibold text-slate-800 text-xs sm:text-sm">Transaction canceled — {`{ id, status: canceled, canceled_at }`}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2.5 rounded-xl bg-slate-50 p-3 border border-slate-200/80">
+                    <span className="rounded-md bg-rose-600 px-2 py-0.5 font-mono text-xs font-bold text-white">401</span>
+                    <span className="text-slate-700 text-xs">Invalid API key</span>
+                  </div>
+                  <div className="flex items-center gap-2.5 rounded-xl bg-slate-50 p-3 border border-slate-200/80">
+                    <span className="rounded-md bg-rose-600 px-2 py-0.5 font-mono text-xs font-bold text-white">403</span>
+                    <span className="text-slate-700 text-xs">Email not verified</span>
+                  </div>
+                  <div className="flex items-center gap-2.5 rounded-xl bg-slate-50 p-3 border border-slate-200/80">
+                    <span className="rounded-md bg-rose-600 px-2 py-0.5 font-mono text-xs font-bold text-white">404</span>
+                    <span className="text-slate-700 text-xs">Transaction not found</span>
+                  </div>
+                  <div className="flex items-center gap-2.5 rounded-xl bg-slate-50 p-3 border border-slate-200/80">
+                    <span className="rounded-md bg-rose-600 px-2 py-0.5 font-mono text-xs font-bold text-white">409</span>
+                    <span className="text-slate-700 text-xs">Already paid / already expired, cannot cancel</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* TRY IT OUT CONSOLE (Exact match to image_200902.png) */}
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-5 space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                    <Terminal className="h-4 w-4" /> TRY IT OUT
+                  </span>
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="font-mono text-slate-600">{apiKey.slice(0, 8)}..</span>
+                  </div>
+                </div>
+
+                {/* cURL Box (Request) */}
+                <div className="space-y-1.5">
+                  <span className="text-[11px] font-mono font-bold text-slate-500">{`>_ REQUEST`}</span>
+                  <div className="relative rounded-xl bg-slate-950 p-4 font-mono text-xs text-slate-200">
+                    <button
+                      onClick={() => copyCode('cancel_curl', `curl -X 'POST' 'https://pay.sisforhub.web.id/payments/${cancelTrxId.trim() || 'trhczp'}/cancel' \\\n  -H 'accept: application/json' \\\n  -H 'Content-Type: application/json' \\\n  -H 'X-API-Key: ${apiKey}'`)}
+                      className="absolute right-3 top-3 rounded-md bg-slate-800 p-1.5 text-slate-400 hover:text-white transition"
+                      title="Copy cURL"
+                    >
+                      {copied === 'cancel_curl' ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+                    </button>
+                    <pre className="text-slate-300 overflow-x-auto whitespace-pre-wrap">{`curl -X 'POST' 'https://pay.sisforhub.web.id/payments/${cancelTrxId.trim() || 'trhczp'}/cancel' \\
+  -H 'accept: application/json' \\
+  -H 'Content-Type: application/json' \\
+  -H 'X-API-Key: ${apiKey}'`}</pre>
+                  </div>
+                </div>
+
+                {/* Path input */}
+                <div className="max-w-xs">
+                  <label className="text-[11px] font-bold text-slate-700 block mb-1">Path Parameter (trxid)</label>
+                  <input
+                    type="text"
+                    value={cancelTrxId}
+                    onChange={(e) => setCancelTrxId(e.target.value)}
+                    placeholder="trhczp"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 font-mono text-xs focus:outline-none focus:border-slate-900"
+                  />
+                </div>
+
+                <button
+                  onClick={runCancel}
+                  disabled={cancelLoading}
+                  className="rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-5 py-2.5 transition flex items-center gap-1.5 shadow-sm disabled:opacity-50"
+                >
+                  <Play className={`h-3.5 w-3.5 fill-current ${cancelLoading ? 'animate-spin' : ''}`} />
+                  <span>{cancelLoading ? 'Executing...' : '▶ Run'}</span>
+                </button>
+
+                {/* macOS Server Response Box (Exact match to image_200902.png) */}
+                {cancelResult && (
+                  <div className="rounded-xl bg-slate-950 overflow-hidden text-xs font-mono shadow-md">
+                    <div className="flex items-center justify-between px-4 py-2.5 bg-slate-900 border-b border-slate-800">
+                      <div className="flex items-center gap-1.5">
+                        <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f56]" />
+                        <span className="h-2.5 w-2.5 rounded-full bg-[#ffbd2e]" />
+                        <span className="h-2.5 w-2.5 rounded-full bg-[#27c93f]" />
+                      </div>
+                      <span className={`text-[11px] font-bold ${cancelResult.status === 200 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                        HTTP {cancelResult.status} • {cancelLatency} ms
+                      </span>
+                    </div>
+                    <pre className="p-4 text-slate-300 overflow-x-auto max-h-64">
+                      {JSON.stringify(cancelResult.data, null, 2)}
+                    </pre>
+                  </div>
+                )}
               </div>
             </div>
           )}
         </div>
 
-        {/* Webhook Category Header */}
+        {/* ============================================================== */}
+        {/* WEBHOOKS CATEGORY & LANGUAGE TABS (MATCHING image_bffe86.png) */}
+        {/* ============================================================== */}
         <div className="flex items-center justify-between border-b border-slate-200 pb-4 pt-6">
           <div>
             <h2 className="text-2xl font-extrabold tracking-tight text-slate-900">Webhooks</h2>
@@ -457,7 +650,7 @@ export default function DocsPage() {
           </span>
         </div>
 
-        {/* Webhook Signature Verification Card */}
+        {/* Webhook Signature Verification Card with Language Switcher */}
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition">
           <div 
             onClick={() => toggleEndpoint('webhook_verify')}
@@ -468,7 +661,7 @@ export default function DocsPage() {
                 SECURITY
               </span>
               <code className="font-mono text-sm font-bold text-slate-900">X-Webhook-Signature</code>
-              <span className="text-sm font-medium text-slate-600 hidden sm:inline">•</span>
+              <span className="text-sm font-medium text-slate-400 hidden sm:inline">•</span>
               <span className="text-sm font-semibold text-slate-700">Verify webhook signatures</span>
             </div>
 
@@ -482,17 +675,61 @@ export default function DocsPage() {
           </div>
 
           {openEndpoint === 'webhook_verify' && (
-            <div className="border-t border-slate-100 p-5 sm:p-6 space-y-5 text-sm">
+            <div className="border-t border-slate-100 p-5 sm:p-6 space-y-6 text-sm">
               <p className="text-slate-600 leading-relaxed text-xs sm:text-sm">
-                Setiap pengiriman webhook menyertakan header <code>X-Webhook-Signature</code> — yaitu HMAC-SHA256 dari body request mentah menggunakan <code>API Key</code> Anda sebagai secret key. Hitung signature di server Anda dan tolak request jika tidak cocok.
+                Setiap request webhook menyertakan header <code>X-Webhook-Signature</code> — yaitu string hash <strong>HMAC-SHA256</strong> dari raw body request mentah menggunakan <code>API Key</code> Anda sebagai secret key. Verifikasi signature di server Anda dan tolak request jika tidak cocok untuk mencegah spoofing / tampered data.
               </p>
 
-              {/* Node.js verification example */}
-              <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Contoh Verifikasi (Node.js Express)</h4>
-                <div className="relative rounded-xl bg-slate-950 p-4 font-mono text-xs text-slate-200">
-                  <pre className="text-slate-300">
-{`const crypto = require('crypto');
+              {/* LANGUAGE TABS: Node.js | PHP | Python (image_bffe86.png) */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    Contoh Kode Verifikasi Signature
+                  </h4>
+
+                  {/* Tabs from image_bffe86.png */}
+                  <div className="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-1 gap-1 text-xs font-semibold">
+                    <button
+                      type="button"
+                      onClick={() => setWebhookLang('nodejs')}
+                      className={`rounded-md px-3 py-1 transition ${
+                        webhookLang === 'nodejs'
+                          ? 'bg-slate-900 text-white shadow-sm'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      Node.js
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setWebhookLang('php')}
+                      className={`rounded-md px-3 py-1 transition ${
+                        webhookLang === 'php'
+                          ? 'bg-slate-900 text-white shadow-sm'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      PHP
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setWebhookLang('python')}
+                      className={`rounded-md px-3 py-1 transition ${
+                        webhookLang === 'python'
+                          ? 'bg-slate-900 text-white shadow-sm'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      Python
+                    </button>
+                  </div>
+                </div>
+
+                {/* Code Window for Node.js */}
+                {webhookLang === 'nodejs' && (
+                  <div className="relative rounded-xl bg-slate-950 p-4 font-mono text-xs text-slate-200">
+                    <button
+                      onClick={() => copyCode('code_nodejs', `const crypto = require('crypto');
 const express = require('express');
 const app = express();
 
@@ -509,17 +746,47 @@ app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
   const payload = JSON.parse(req.body.toString());
   console.log('Webhook verified:', payload.event, payload.data);
   res.sendStatus(200);
-});`}
-                  </pre>
-                </div>
-              </div>
+});`)}
+                      className="absolute right-3 top-3 rounded-md bg-slate-800 p-1.5 text-slate-400 hover:text-white transition"
+                      title="Copy Code"
+                    >
+                      {copied === 'code_nodejs' ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+                    </button>
+                    <pre className="text-slate-300 overflow-x-auto">
+{`const crypto = require('crypto');
+const express = require('express');
+const app = express();
 
-              {/* PHP verification example */}
-              <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Contoh Verifikasi (PHP / Laravel)</h4>
-                <div className="relative rounded-xl bg-slate-950 p-4 font-mono text-xs text-slate-200">
-                  <pre className="text-slate-300">
-{`$rawBody = file_get_contents('php://input');
+const SECRET = 'YOUR_API_KEY'; // Kunci API Anda (misal: ${apiKey})
+
+// Gunakan express.raw agar body tidak terubah sebelum verifikasi hash
+app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
+  const received = req.headers['x-webhook-signature'];
+  const expected = crypto
+    .createHmac('sha256', SECRET)
+    .update(req.body)
+    .digest('hex');
+
+  if (received !== expected) {
+    return res.status(401).json({ error: 'invalid signature' });
+  }
+
+  const payload = JSON.parse(req.body.toString());
+  console.log('Webhook verified:', payload.event, payload.data);
+
+  // Proses bisnis (top up saldo, aktifkan pesanan, dll)
+  res.sendStatus(200);
+});`}
+                    </pre>
+                  </div>
+                )}
+
+                {/* Code Window for PHP */}
+                {webhookLang === 'php' && (
+                  <div className="relative rounded-xl bg-slate-950 p-4 font-mono text-xs text-slate-200">
+                    <button
+                      onClick={() => copyCode('code_php', `<?php
+$rawBody = file_get_contents('php://input');
 $signature = $_SERVER['HTTP_X_WEBHOOK_SIGNATURE'] ?? '';
 $secret = 'YOUR_API_KEY';
 
@@ -527,11 +794,122 @@ $expected = hash_hmac('sha256', $rawBody, $secret);
 
 if (!hash_equals($expected, $signature)) {
     http_response_code(401);
-    exit('Invalid signature');
+    exit(json_encode(['error' => 'Invalid signature']));
 }
 
-$data = json_decode($rawBody, true);
-// Proses event: $data['event'] & $data['data']`}
+$payload = json_decode($rawBody, true);
+// Event: $payload['event'], Data: $payload['data']
+echo json_encode(['success' => true]);`)}
+                      className="absolute right-3 top-3 rounded-md bg-slate-800 p-1.5 text-slate-400 hover:text-white transition"
+                      title="Copy Code"
+                    >
+                      {copied === 'code_php' ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+                    </button>
+                    <pre className="text-slate-300 overflow-x-auto">
+{`<?php
+// Ambil raw payload mentah langsung dari input stream
+$rawBody = file_get_contents('php://input');
+$signature = $_SERVER['HTTP_X_WEBHOOK_SIGNATURE'] ?? '';
+$secret = 'YOUR_API_KEY'; // Kunci API Anda (misal: ${apiKey})
+
+$expected = hash_hmac('sha256', $rawBody, $secret);
+
+// Gunakan hash_equals untuk mencegah timing attack
+if (!hash_equals($expected, $signature)) {
+    http_response_code(401);
+    exit(json_encode(['error' => 'Invalid signature']));
+}
+
+$payload = json_decode($rawBody, true);
+
+// Proses event pembayaran
+$event = $payload['event']; // payment.paid
+$data = $payload['data'];
+
+echo json_encode(['success' => true]);`}
+                    </pre>
+                  </div>
+                )}
+
+                {/* Code Window for Python (image_bffe86.png active) */}
+                {webhookLang === 'python' && (
+                  <div className="relative rounded-xl bg-slate-950 p-4 font-mono text-xs text-slate-200">
+                    <button
+                      onClick={() => copyCode('code_py', `import hmac
+import hashlib
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+SECRET = b'YOUR_API_KEY'
+
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    signature = request.headers.get('X-Webhook-Signature')
+    payload = request.get_data() # Ambil raw bytes mentah
+    expected = hmac.new(SECRET, payload, hashlib.sha256).hexdigest()
+
+    if not signature or not hmac.compare_digest(signature, expected):
+        return jsonify({'error': 'Invalid signature'}), 401
+
+    data = request.get_json()
+    print('Webhook verified:', data['event'], data['data'])
+    return jsonify({'success': True}), 200`)}
+                      className="absolute right-3 top-3 rounded-md bg-slate-800 p-1.5 text-slate-400 hover:text-white transition"
+                      title="Copy Code"
+                    >
+                      {copied === 'code_py' ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+                    </button>
+                    <pre className="text-slate-300 overflow-x-auto">
+{`import hmac
+import hashlib
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+SECRET = b'YOUR_API_KEY'  # Kunci API Anda (misal: b'${apiKey}')
+
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    signature = request.headers.get('X-Webhook-Signature')
+    payload = request.get_data()  # Ambil raw bytes mentah dari request body
+    
+    # Hitung HMAC-SHA256
+    expected = hmac.new(SECRET, payload, hashlib.sha256).hexdigest()
+
+    # Cegah timing-attack dengan compare_digest
+    if not signature or not hmac.compare_digest(signature, expected):
+        return jsonify({'error': 'Invalid signature'}), 401
+
+    data = request.get_json()
+    print(f"Event: {data.get('event')}, ID: {data.get('data', {}).get('id')}")
+    
+    # Jalankan logika bisnis pesanan di sini
+    return jsonify({'success': True}), 200`}
+                    </pre>
+                  </div>
+                )}
+              </div>
+
+              {/* Sample Webhook Event Payload */}
+              <div className="space-y-2 pt-2 border-t border-slate-100">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                  Sample Event Payload (payment.paid)
+                </h4>
+                <div className="relative rounded-xl bg-slate-950 p-4 font-mono text-xs text-slate-200">
+                  <pre className="text-slate-300 overflow-x-auto">
+{`{
+  "event": "payment.paid",
+  "data": {
+    "id": "26114d00",
+    "amount": 25012,
+    "base_amount": 25000,
+    "unique_code": 12,
+    "customer_name": "Pak Budi",
+    "message": "Pembelian Paket",
+    "issuer": "ShopeePay",
+    "transaction_id": "101196058878630531",
+    "paid_at": 1792998022
+  }
+}`}
                   </pre>
                 </div>
               </div>
@@ -539,6 +917,10 @@ $data = json_decode($rawBody, true);
           )}
         </div>
       </main>
+
+      <footer className="pb-28 text-center text-xs text-slate-400 md:pb-8">
+        SisforHub Pay &copy; 2026 • Interactive API Docs
+      </footer>
     </div>
   );
 }
