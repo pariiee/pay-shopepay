@@ -25,22 +25,13 @@ export default function Navbar({ active = '', storeName = 'Ngecode Aje', tokenOk
 
   return (
     <>
-      <header className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-5 sm:px-6">
-        <div className="flex items-center gap-3">
-          <Link 
-            href={active === 'dashboard' ? '/' : '/dashboard'} 
-            aria-label={active === 'dashboard' ? 'Kembali ke Beranda' : 'Kembali ke Dashboard'} 
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-600 transition hover:bg-slate-900 hover:text-white shadow-sm"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-          <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900" style={{ color: LIME }}>
-              <QrCode className="h-4 w-4" />
-            </div>
-            <span className="text-lg font-bold tracking-tight text-slate-900">Alpay</span>
+      <header className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-5 sm:px-6">
+        <Link href="/dashboard" className="flex items-center gap-2.5 transition hover:opacity-90">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 shadow-md shadow-slate-900/10" style={{ color: LIME }}>
+            <QrCode className="h-5 w-5" />
           </div>
-        </div>
+          <span className="text-xl font-extrabold tracking-tight text-slate-900">Alpay</span>
+        </Link>
 
         {/* Pill Navigation Bar */}
         <nav className="hidden items-center gap-1 rounded-full bg-white p-1 text-xs font-semibold md:flex shadow-sm">

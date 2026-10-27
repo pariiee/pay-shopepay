@@ -4,7 +4,7 @@ import { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import { 
   ArrowLeft, CheckCircle2, Clock, RotateCw, XCircle, 
-  Receipt, Copy, Check, Store, User, ShieldCheck, AlertCircle, RefreshCw
+  Receipt, Copy, Check, Store, User, ShieldCheck, AlertCircle, RefreshCw, QrCode
 } from 'lucide-react';
 
 const LIME = '#d8f53b';
@@ -202,13 +202,13 @@ export default function InvoicePage({ params }) {
 
   return (
     <div className="min-h-screen bg-[#e9edf2] text-slate-900 flex flex-col justify-between p-4 sm:p-6">
-      {/* Top Navbar */}
-      <div className="w-full max-w-lg mx-auto pt-2 flex items-center justify-between">
-        <Link 
-          href="/donate" 
-          className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-700 shadow-sm transition hover:bg-slate-900 hover:text-white"
-        >
-          <ArrowLeft className="h-4 w-4" />
+      {/* Header */}
+      <header className="mx-auto flex w-full max-w-lg items-center justify-between gap-3 pt-2">
+        <Link href="/" className="flex items-center gap-2.5 transition hover:opacity-90">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 shadow-md shadow-slate-900/10" style={{ color: LIME }}>
+            <QrCode className="h-5 w-5" />
+          </div>
+          <span className="text-xl font-extrabold tracking-tight text-slate-900">Alpay</span>
         </Link>
         <button
           onClick={copyInvoiceUrl}
@@ -217,7 +217,7 @@ export default function InvoicePage({ params }) {
           {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5 text-slate-400" />}
           <span>{copied ? 'Tersalin' : 'Bagikan Invoice'}</span>
         </button>
-      </div>
+      </header>
 
       <main className="w-full max-w-lg mx-auto my-6 flex-1 space-y-4">
         {/* INVOICE CARD */}

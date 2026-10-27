@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { KeyRound, ArrowLeft, AlertCircle, RotateCw, Eye, EyeOff, ShieldCheck, Smartphone } from 'lucide-react';
+import { KeyRound, ArrowLeft, AlertCircle, RotateCw, Eye, EyeOff, ShieldCheck, Smartphone, QrCode } from 'lucide-react';
 
 const LIME = '#d8f53b';
 
@@ -66,17 +66,18 @@ export default function MacukPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#e9edf2] text-slate-900 flex flex-col justify-between items-center p-4 sm:p-6">
-      <div className="w-full max-w-sm pt-4 flex justify-start">
-        <Link 
-          href="/" 
-          className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-700 shadow-sm transition hover:bg-slate-900 hover:text-white"
-        >
-          <ArrowLeft className="h-4 w-4" />
+    <div className="min-h-screen bg-[#e9edf2] text-slate-900 flex flex-col justify-between p-4 sm:p-6">
+      {/* Header */}
+      <header className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-2 py-2 sm:px-6">
+        <Link href="/" className="flex items-center gap-2.5 transition hover:opacity-90">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 shadow-md shadow-slate-900/10" style={{ color: LIME }}>
+            <QrCode className="h-5 w-5" />
+          </div>
+          <span className="text-xl font-extrabold tracking-tight text-slate-900">Alpay</span>
         </Link>
-      </div>
+      </header>
 
-      <div className="w-full max-w-sm rounded-[28px] bg-white p-7 sm:p-9 shadow-xl shadow-slate-900/5 border border-slate-100">
+      <div className="w-full max-w-sm mx-auto my-auto rounded-[28px] bg-white p-7 sm:p-9 shadow-xl shadow-slate-900/5 border border-slate-100">
         {!require2fa ? (
           // STEP 1: TOKEN INPUT
           <>
