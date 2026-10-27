@@ -16,7 +16,7 @@ export default function DonasiPage() {
   const router = useRouter();
   const [donorName, setDonorName] = useState('');
   const [message, setMessage] = useState('');
-  const [amount, setAmount] = useState(1000);
+  const [amount, setAmount] = useState(100);
   const [customAmount, setCustomAmount] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -190,10 +190,10 @@ export default function DonasiPage() {
         <div className="text-center mb-6">
           <div className="inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-800 shadow-sm mb-3">
             <Heart className="h-3.5 w-3.5 text-rose-500 fill-rose-500" />
-            <span>Sandbox & Donasi Gateway</span>
+            <span>Yuk Donate untuk Developer</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Uji Pembayaran QRIS ShopeePay
+            Yuk Donate untuk Developer
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1.5">
             Mulai <strong className="text-slate-900 font-bold">Rp 100</strong> via e-wallet atau m-banking manapun
@@ -331,21 +331,43 @@ export default function DonasiPage() {
                 />
               </div>
 
-              {/* Preset Amounts */}
+              {/* Nominal Input */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Nominal
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-2.5 text-xs font-bold text-slate-400">Rp</span>
+                  <input
+                    type="number"
+                    min="100"
+                    placeholder="100"
+                    value={customAmount}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setCustomAmount(val);
+                      if (val) setAmount(parseInt(val, 10) || 100);
+                    }}
+                    className="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:outline-none focus:border-slate-900 transition-colors"
+                  />
+                </div>
+              </div>
+
+              {/* Rekomendasi di Bawah Kolom Nominal */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-2">
-                  Pilih Nominal Cepat (Min Rp 100)
+                  Rekomendasi
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   {PRESET_AMOUNTS.map((amt) => {
-                    const isSelected = !customAmount && amount === amt;
+                    const isSelected = (!customAmount && amount === amt) || (parseInt(customAmount, 10) === amt);
                     return (
                       <button
                         key={amt}
                         type="button"
                         onClick={() => {
                           setAmount(amt);
-                          setCustomAmount('');
+                          setCustomAmount(String(amt));
                         }}
                         className={`py-2 px-3 rounded-full text-xs font-bold transition-all border ${
                           isSelected
@@ -360,35 +382,27 @@ export default function DonasiPage() {
                 </div>
               </div>
 
-              {/* Custom Amount */}
+              {/* Message (Max 100 huruf + Anti Injection Validation) */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Atau Ketik Nominal Sendiri
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3.5 top-2.5 text-xs font-bold text-slate-400">Rp</span>
-                  <input
-                    type="number"
-                    min="100"
-                    placeholder="Contoh: 1500"
-                    value={customAmount}
-                    onChange={(e) => setCustomAmount(e.target.value)}
-                    className="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:outline-none focus:border-slate-900 transition-colors"
-                  />
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                    <MessageSquare className="h-3.5 w-3.5 text-slate-400" />
+                    <span>Pesan / Doa (Opsional)</span>
+                  </label>
+                  <span className={`text-[10px] font-mono ${message.length >= 90 ? 'text-amber-600 font-bold' : 'text-slate-400'}`}>
+                    {message.length}/100
+                  </span>
                 </div>
-              </div>
-
-              {/* Message */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1.5">
-                  <MessageSquare className="h-3.5 w-3.5 text-slate-400" />
-                  <span>Pesan / Doa (Opsional)</span>
-                </label>
                 <textarea
                   rows="2"
+                  maxLength={100}
                   placeholder="Semoga lancar dan berkah..."
                   value={message}
-                  onChange={(e) => setMessage(e.target.value)}
+                  onChange={(e) => {
+                    // Sanitasi teks dari tag HTML dan karakter berbahaya
+                    const clean = e.target.value.replace(/<[^>]*>?/gm, '').slice(0, 100);
+                    setMessage(clean);
+                  }}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:outline-none focus:border-slate-900 transition-colors resize-none"
                 />
               </div>
@@ -420,16 +434,13 @@ export default function DonasiPage() {
           )}
         </div>
 
-        {/* FEED DONATUR TERBARU */}
+        {/* FEED 5 DONATE TERBARU */}
         <section className="mt-8">
           <div className="flex items-center justify-between mb-3 px-1">
             <h3 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
               <Sparkles className="h-3.5 w-3.5 text-slate-900" />
-              <span>Donasi Berhasil Terbaru</span>
+              <span>5 Donate Terbaru</span>
             </h3>
-            <span className="text-[11px] text-slate-500">
-              Total: <strong className="text-slate-900">{summary.total_donors}</strong> donasi
-            </span>
           </div>
 
           <div className="rounded-[28px] bg-white p-4 shadow-sm border border-slate-200/50">
@@ -439,7 +450,7 @@ export default function DonasiPage() {
               </p>
             ) : (
               <ul className="divide-y divide-slate-100">
-                {recentList.map((item) => (
+                {recentList.slice(0, 5).map((item) => (
                   <li key={item.id} className="py-3 flex items-start justify-between gap-3 text-xs">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">

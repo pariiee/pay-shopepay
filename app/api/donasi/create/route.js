@@ -8,8 +8,8 @@ export async function POST(req) {
   try {
     const body = await req.json();
     const rawAmount = parseInt(body.amount, 10);
-    const donorName = (body.donor_name || 'Hamba Allah').trim().slice(0, 50);
-    const message = (body.message || '').trim().slice(0, 200);
+    const donorName = String(body.donor_name || 'Hamba Allah').replace(/<[^>]*>?/gm, '').trim().slice(0, 50);
+    const message = String(body.message || '').replace(/<[^>]*>?/gm, '').trim().slice(0, 100);
 
     if (isNaN(rawAmount) || rawAmount < 100) {
       return NextResponse.json(
