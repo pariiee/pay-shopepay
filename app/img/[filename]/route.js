@@ -60,7 +60,9 @@ export async function GET(req, { params }) {
       return new NextResponse(svg, {
         headers: {
           'Content-Type': 'image/svg+xml',
-          'Cache-Control': 'public, max-age=86400, immutable'
+          'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+          'CDN-Cache-Control': 'no-store',
+          'Cloudflare-CDN-Cache-Control': 'no-store'
         }
       });
     }
@@ -72,7 +74,9 @@ export async function GET(req, { params }) {
         return new NextResponse(pngBuffer, {
           headers: {
             'Content-Type': 'image/png',
-            'Cache-Control': 'public, max-age=60'
+            'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+            'CDN-Cache-Control': 'no-store',
+            'Cloudflare-CDN-Cache-Control': 'no-store'
           }
         });
       } catch (e) {
@@ -95,7 +99,9 @@ export async function GET(req, { params }) {
     return new NextResponse(fallbackPng, {
       headers: {
         'Content-Type': 'image/png',
-        'Cache-Control': 'public, max-age=60'
+        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+        'CDN-Cache-Control': 'no-store',
+        'Cloudflare-CDN-Cache-Control': 'no-store'
       }
     });
   } catch (err) {
