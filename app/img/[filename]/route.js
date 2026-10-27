@@ -23,17 +23,22 @@ export async function GET(req, { params }) {
 
     const now = Math.floor(Date.now() / 1000);
     const expiresAt = row.expires_at || (row.created_at + 300);
+    const isPaid = row.status === 'paid';
     const isExpired = row.status === 'expired' || (row.status === 'pending' && now > expiresAt);
-    const isCancelled = row.status === 'cancelled';
+    const isCancelled = row.status === 'cancelled' || row.status === 'canceled';
 
-    // Otomatis tolak / hapus akses gambar jika transaksi sudah expired atau dibatalkan
-    if (isCancelled || isExpired) {
+    // Otomatis tolak / hapus akses gambar jika transaksi sudah lunas, expired, atau dibatalkan
+    if (isPaid || isCancelled || isExpired) {
       if (row.status === 'pending' && isExpired) {
         db.prepare("UPDATE donations SET status = 'expired' WHERE id = ?").run(id);
       }
-      return new NextResponse('QR Expired or Cancelled', { 
+      return new NextResponse('QR Not Available (Already Paid, Expired, or Cancelled)', { 
         status: 404,
-        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' }
+        headers: { 
+          'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+          'CDN-Cache-Control': 'no-store',
+          'Cloudflare-CDN-Cache-Control': 'no-store'
+        }
       });
     }
 
