@@ -121,7 +121,7 @@ export default function DocsPage() {
   useEffect(() => {
     if (typeof window !== 'undefined') setBaseUrl(window.location.origin);
   }, []);
-  const [openEndpoint, setOpenEndpoint] = useState('cancel');
+  const [openEndpoint, setOpenEndpoint] = useState(null);
   const [copied, setCopied] = useState(null);
   const [apiKey, setApiKey] = useState('al-ez7dpzxdh6');
 
