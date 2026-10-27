@@ -13,11 +13,11 @@ const LIME = '#d8f53b';
 
 const OPENAPI_YAML_TEXT = `openapi: 3.0.3
 info:
-  title: SisforHub Pay Gateway API
+  title: Alpay Gateway API
   description: API Gateway Pembayaran Dinamis ShopeePay QRIS & Webhook Callback
   version: 1.0.0
 servers:
-  - url: https://pay.sisforhub.web.id
+  - url: /
     description: Production Server
 
 paths:
@@ -117,6 +117,10 @@ components:
 `;
 
 export default function DocsPage() {
+  const [baseUrl, setBaseUrl] = useState('');
+  useEffect(() => {
+    if (typeof window !== 'undefined') setBaseUrl(window.location.origin);
+  }, []);
   const [openEndpoint, setOpenEndpoint] = useState('cancel');
   const [copied, setCopied] = useState(null);
   const [apiKey, setApiKey] = useState('al-ez7dpzxdh6');
@@ -420,13 +424,13 @@ export default function DocsPage() {
                   <span className="text-[11px] font-mono font-bold text-slate-500">{`>_ REQUEST`}</span>
                   <div className="relative rounded-xl bg-slate-950 p-4 font-mono text-xs text-slate-200">
                     <button
-                      onClick={() => copyCode('create_curl', `curl -X 'POST' 'https://pay.sisforhub.web.id/payments' \\\n  -H 'accept: application/json' \\\n  -H 'Content-Type: application/json' \\\n  -H 'X-API-Key: ${apiKey}' \\\n  -d '{\n    "amount": ${createAmount || 1000},\n    "fee": ${createFee || 0},\n    "customer_name": "${createCustomer}",\n    "note": "${createNote}",\n    "valid_minutes": 5\n  }'`)}
+                      onClick={() => copyCode('create_curl', `curl -X 'POST' '${baseUrl || 'https://pay.domain.com'}/payments' \\\n  -H 'accept: application/json' \\\n  -H 'Content-Type: application/json' \\\n  -H 'X-API-Key: ${apiKey}' \\\n  -d '{\n    "amount": ${createAmount || 1000},\n    "fee": ${createFee || 0},\n    "customer_name": "${createCustomer}",\n    "note": "${createNote}",\n    "valid_minutes": 5\n  }'`)}
                       className="absolute right-3 top-3 rounded-md bg-slate-800 p-1.5 text-slate-400 hover:text-white transition"
                       title="Copy cURL"
                     >
                       {copied === 'create_curl' ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
                     </button>
-                    <pre className="text-slate-300 overflow-x-auto whitespace-pre-wrap">{`curl -X 'POST' 'https://pay.sisforhub.web.id/payments' \\
+                    <pre className="text-slate-300 overflow-x-auto whitespace-pre-wrap">{`curl -X 'POST' '${baseUrl || 'https://pay.domain.com'}/payments' \\
   -H 'accept: application/json' \\
   -H 'Content-Type: application/json' \\
   -H 'X-API-Key: ${apiKey}' \\
@@ -599,13 +603,13 @@ export default function DocsPage() {
                   <span className="text-[11px] font-mono font-bold text-slate-500">{`>_ REQUEST`}</span>
                   <div className="relative rounded-xl bg-slate-950 p-4 font-mono text-xs text-slate-200">
                     <button
-                      onClick={() => copyCode('status_curl', `curl -X 'GET' 'https://pay.sisforhub.web.id/payments/${statusTrxId.trim() || ':trxid'}/status' \\\n  -H 'accept: application/json'`)}
+                      onClick={() => copyCode('status_curl', `curl -X 'GET' '${baseUrl || 'https://pay.domain.com'}/payments/${statusTrxId.trim() || ':trxid'}/status' \\\n  -H 'accept: application/json'`)}
                       className="absolute right-3 top-3 rounded-md bg-slate-800 p-1.5 text-slate-400 hover:text-white transition"
                       title="Copy cURL"
                     >
                       {copied === 'status_curl' ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
                     </button>
-                    <pre className="text-slate-300 overflow-x-auto whitespace-pre-wrap">{`curl -X 'GET' 'https://pay.sisforhub.web.id/payments/${statusTrxId.trim() || ':trxid'}/status' \\
+                    <pre className="text-slate-300 overflow-x-auto whitespace-pre-wrap">{`curl -X 'GET' '${baseUrl || 'https://pay.domain.com'}/payments/${statusTrxId.trim() || ':trxid'}/status' \\
   -H 'accept: application/json'`}</pre>
                   </div>
                 </div>
@@ -760,13 +764,13 @@ export default function DocsPage() {
                   <span className="text-[11px] font-mono font-bold text-slate-500">{`>_ REQUEST`}</span>
                   <div className="relative rounded-xl bg-slate-950 p-4 font-mono text-xs text-slate-200">
                     <button
-                      onClick={() => copyCode('cancel_curl', `curl -X 'POST' 'https://pay.sisforhub.web.id/payments/${cancelTrxId.trim() || 'trhczp'}/cancel' \\\n  -H 'accept: application/json' \\\n  -H 'Content-Type: application/json' \\\n  -H 'X-API-Key: ${apiKey}'`)}
+                      onClick={() => copyCode('cancel_curl', `curl -X 'POST' '${baseUrl || 'https://pay.domain.com'}/payments/${cancelTrxId.trim() || 'trhczp'}/cancel' \\\n  -H 'accept: application/json' \\\n  -H 'Content-Type: application/json' \\\n  -H 'X-API-Key: ${apiKey}'`)}
                       className="absolute right-3 top-3 rounded-md bg-slate-800 p-1.5 text-slate-400 hover:text-white transition"
                       title="Copy cURL"
                     >
                       {copied === 'cancel_curl' ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
                     </button>
-                    <pre className="text-slate-300 overflow-x-auto whitespace-pre-wrap">{`curl -X 'POST' 'https://pay.sisforhub.web.id/payments/${cancelTrxId.trim() || 'trhczp'}/cancel' \\
+                    <pre className="text-slate-300 overflow-x-auto whitespace-pre-wrap">{`curl -X 'POST' '${baseUrl || 'https://pay.domain.com'}/payments/${cancelTrxId.trim() || 'trhczp'}/cancel' \\
   -H 'accept: application/json' \\
   -H 'Content-Type: application/json' \\
   -H 'X-API-Key: ${apiKey}'`}</pre>
@@ -1099,7 +1103,7 @@ def webhook():
       </main>
 
       <footer className="pb-28 text-center text-xs text-slate-400 md:pb-8">
-        SisforHub Pay &copy; 2026 • Interactive API Docs
+        Alpay &copy; 2026 • Interactive API Docs
       </footer>
     </div>
   );

@@ -464,7 +464,7 @@ export default function DonasiPage() {
       </main>
 
       <footer className="py-6 text-center text-xs text-slate-400">
-        SisforHub Pay &copy; 2026
+        Alpay &copy; 2026
       </footer>
     </div>
   );

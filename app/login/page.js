@@ -110,7 +110,7 @@ export default function LoginPage() {
       </div>
 
       <footer className="py-4 text-center text-xs text-slate-400">
-        SisforHub Pay &copy; 2026 • Protected Admin Area
+        Alpay &copy; 2026 • Protected Admin Area
       </footer>
     </div>
   );

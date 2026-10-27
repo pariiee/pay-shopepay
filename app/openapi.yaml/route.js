@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export const YAML_SPEC = `openapi: 3.0.3
 info:
-  title: SisforHub Pay Gateway API
+  title: Alpay Gateway API
   description: API Gateway Pembayaran Dinamis ShopeePay QRIS & Webhook Callback
   version: 1.0.0
 servers:

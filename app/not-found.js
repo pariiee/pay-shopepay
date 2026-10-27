@@ -14,7 +14,7 @@ export default function NotFound() {
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-sm" style={{ color: LIME }}>
             <QrCode className="h-5 w-5" />
           </div>
-          <span className="text-xl font-extrabold tracking-tight text-slate-900">SisforHub Pay</span>
+          <span className="text-xl font-extrabold tracking-tight text-slate-900">Alpay</span>
         </Link>
       </header>
 
@@ -56,7 +56,7 @@ export default function NotFound() {
       </main>
 
       <footer className="py-6 text-center text-xs text-slate-400">
-        SisforHub Pay &copy; 2026 • 404 Not Found
+        Alpay &copy; 2026 • 404 Not Found
       </footer>
     </div>
   );

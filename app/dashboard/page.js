@@ -511,7 +511,7 @@ export default function DashboardPage() {
       </main>
 
       <footer className="pb-28 text-center text-xs text-slate-400 md:pb-8">
-        SisforHub Pay Gateway Dashboard &copy; 2026
+        Alpay Gateway Dashboard &copy; 2026
       </footer>
 
       {/* MODAL DETAIL TRANSAKSI */}

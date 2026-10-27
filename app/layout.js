@@ -1,7 +1,7 @@
 import './globals.css';
 
 export const metadata = {
-  title: 'SisforHub Pay — Modern ShopeePay & QRIS Gateway',
+  title: 'Alpay — Modern ShopeePay & QRIS Gateway',
   description: 'High-performance, stateless QRIS payment gateway and donation portal powered by ShopeePay Partner.',
 };
 

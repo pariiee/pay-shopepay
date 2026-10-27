@@ -893,7 +893,7 @@ export default function SettingsPage() {
       </main>
 
       <footer className="pb-28 text-center text-xs text-slate-400 md:pb-8">
-        SisforHub Pay &copy; 2026 • Settings Module
+        Alpay &copy; 2026 • Settings Module
       </footer>
     </div>
   );

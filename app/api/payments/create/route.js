@@ -86,7 +86,9 @@ export async function POST(req) {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)
     `).run(paymentId, customerName, note, rawAmount, fee, uniqueCode, finalAmount, dynamicQR, now, expiresAt);
 
-    const origin = req.headers.get('origin') || 'https://pay.sisforhub.web.id';
+    const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || 'pay.sisforhub.web.id';
+    const proto = req.headers.get('x-forwarded-proto') || (host.includes('localhost') ? 'http' : 'https');
+    const origin = req.headers.get('origin') || `${proto}://${host}`;
     const paymentUrl = `${origin}/payin/${paymentId}`;
     const qrImageUrl = `${origin}/img/qr-${paymentId}.png`;
 

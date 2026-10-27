@@ -31,7 +31,9 @@ export async function GET(req, { params }) {
     const now = Math.floor(Date.now() / 1000);
     const expiresAt = row.expires_at || (row.created_at + 300); // 5 mins fallback
     const isExpired = row.status === 'expired' || (row.status === 'pending' && now > expiresAt);
-    const origin = req.headers.get('origin') || 'https://pay.sisforhub.web.id';
+    const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || 'pay.sisforhub.web.id';
+    const proto = req.headers.get('x-forwarded-proto') || (host.includes('localhost') ? 'http' : 'https');
+    const origin = req.headers.get('origin') || `${proto}://${host}`;
     const qrImageUrl = `${origin}/img/qr-${row.id}.png`;
 
     return NextResponse.json({

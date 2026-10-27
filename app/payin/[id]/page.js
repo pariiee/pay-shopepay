@@ -195,7 +195,7 @@ export default function InvoicePage({ params }) {
             Buat Pembayaran Baru
           </Link>
         </div>
-        <footer className="py-4 text-xs text-slate-400">SisforHub Pay &copy; 2026</footer>
+        <footer className="py-4 text-xs text-slate-400">Alpay &copy; 2026</footer>
       </div>
     );
   }
@@ -385,7 +385,7 @@ export default function InvoicePage({ params }) {
       </main>
 
       <footer className="py-4 text-center text-xs text-slate-400">
-        SisforHub Pay &copy; 2026 • Official Invoice Tracker
+        Alpay &copy; 2026 • Official Invoice Tracker
       </footer>
     </div>
   );

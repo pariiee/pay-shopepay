@@ -38,7 +38,7 @@ export default function Navbar({ active = '', storeName = 'Ngecode Aje', tokenOk
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900" style={{ color: LIME }}>
               <QrCode className="h-4 w-4" />
             </div>
-            <span className="text-lg font-bold tracking-tight text-slate-900">SisforHub Pay</span>
+            <span className="text-lg font-bold tracking-tight text-slate-900">Alpay</span>
           </div>
         </div>
 

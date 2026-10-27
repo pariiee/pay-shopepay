@@ -539,7 +539,7 @@ export default function RiwayatPage() {
         )}
       </main>
       <footer className="pb-28 text-center text-xs text-slate-400 md:pb-8">
-        SisforHub Pay Gateway Riwayat &copy; 2026
+        Alpay Gateway Riwayat &copy; 2026
       </footer>
     </div>
   );
