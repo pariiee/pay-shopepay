@@ -2,24 +2,24 @@ import './globals.css';
 
 export const metadata = {
   metadataBase: new URL('https://pay.ghifari.biz.id'),
-  title: 'Alpay — QRISNYA QWEH',
-  description: 'Scan langsung sat-set anti ribet! Tinggal tap, nominal pas sampai rupiah, langsung lunas detik itu juga no cap 💅⚡',
+  title: 'Alpay — QRISKU JIER',
+  description: 'Scan bentar, bayar kelar. Saldo pamit, transaksi aman bos 💸',
   icons: {
     icon: '/alpay.svg',
     shortcut: '/alpay.svg',
     apple: '/alpay.svg',
   },
   openGraph: {
-    title: 'Alpay — QRISNYA QWEH',
-    description: 'Scan langsung sat-set anti ribet! Tinggal tap, nominal pas sampai rupiah, langsung lunas detik itu juga no cap 💅⚡',
+    title: 'Alpay — QRISKU JIER',
+    description: 'Scan bentar, bayar kelar. Saldo pamit, transaksi aman bos 💸',
     url: 'https://pay.ghifari.biz.id',
     siteName: 'Alpay',
     images: [
       {
-        url: '/og.png',
+        url: '/og-alpay.png',
         width: 1200,
         height: 630,
-        alt: 'Alpay — QRISNYA QWEH',
+        alt: 'Alpay — QRISKU JIER',
       },
     ],
     locale: 'id_ID',
@@ -27,9 +27,9 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Alpay — QRISNYA QWEH',
-    description: 'Scan langsung sat-set anti ribet! Tinggal tap, langsung lunas detik itu juga no cap 💅⚡',
-    images: ['/og.png'],
+    title: 'Alpay — QRISKU JIER',
+    description: 'Scan bentar, bayar kelar. Saldo pamit, transaksi aman bos 💸',
+    images: ['/og-alpay.png'],
   },
 };
 
