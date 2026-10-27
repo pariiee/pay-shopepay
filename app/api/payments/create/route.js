@@ -88,6 +88,7 @@ export async function POST(req) {
 
     const origin = req.headers.get('origin') || 'https://pay.sisforhub.web.id';
     const paymentUrl = `${origin}/payin/${paymentId}`;
+    const qrImageUrl = `${origin}/img/qr-${paymentId}.png`;
 
     return NextResponse.json({
       success: true,
@@ -100,7 +101,7 @@ export async function POST(req) {
         fee,
         unique_code: uniqueCode,
         amount: finalAmount,
-        qr_image: qrImage,
+        qr_image: qrImageUrl,
         valid_minutes: validMinutes,
         expires_at: new Date(expiresAt * 1000).toISOString()
       }

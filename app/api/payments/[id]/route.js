@@ -31,6 +31,8 @@ export async function GET(req, { params }) {
     const now = Math.floor(Date.now() / 1000);
     const expiresAt = row.expires_at || (row.created_at + 300); // 5 mins fallback
     const isExpired = row.status === 'expired' || (row.status === 'pending' && now > expiresAt);
+    const origin = req.headers.get('origin') || 'https://pay.sisforhub.web.id';
+    const qrImageUrl = `${origin}/img/qr-${row.id}.png`;
 
     return NextResponse.json({
       success: true,
@@ -44,7 +46,7 @@ export async function GET(req, { params }) {
         unique_code: row.unique_code,
         amount: row.amount,
         status: isExpired && row.status === 'pending' ? 'expired' : row.status,
-        qr_image: qrImage,
+        qr_image: qrImageUrl,
         created_at: row.created_at,
         expires_at: expiresAt,
         paid_at: row.paid_at,
