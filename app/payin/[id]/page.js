@@ -54,7 +54,7 @@ export default function InvoicePage({ params }) {
   const [checking, setChecking] = useState(false);
   const [copied, setCopied] = useState(false);
   const [countdown, setCountdown] = useState(300); // 5 mins
-  const [pollingCountdown, setPollingCountdown] = useState(15);
+  const [pollingCountdown, setPollingCountdown] = useState(10);
 
   const fetchInvoice = async () => {
     try {
@@ -92,7 +92,7 @@ export default function InvoicePage({ params }) {
     return () => clearInterval(ticker);
   }, [invoice]);
 
-  // 15s auto-polling loop
+  // 10s auto-polling loop
   useEffect(() => {
     if (!invoice || invoice.status !== 'pending') return;
 
@@ -115,7 +115,7 @@ export default function InvoicePage({ params }) {
         console.error(err);
       } finally {
         setChecking(false);
-        setPollingCountdown(15);
+        setPollingCountdown(10);
       }
     };
 
@@ -123,7 +123,7 @@ export default function InvoicePage({ params }) {
       setPollingCountdown((prev) => {
         if (prev <= 1) {
           checkStatus();
-          return 15;
+          return 10;
         }
         return prev - 1;
       });
