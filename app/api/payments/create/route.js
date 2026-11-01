@@ -30,6 +30,20 @@ export async function POST(req) {
 
     const db = getDb();
     const now = Math.floor(Date.now() / 1000);
+
+    // Auto-expire stale pending transactions
+    try {
+      db.prepare(`
+        UPDATE donations 
+        SET status = 'expired' 
+        WHERE status = 'pending' 
+          AND (
+            (expires_at IS NOT NULL AND expires_at < ?)
+            OR (expires_at IS NULL AND created_at < ? - 1200)
+          )
+      `).run(now, now);
+    } catch (_) {}
+
     const expireSec = validMinutes * 60;
     const expiresAt = now + expireSec;
 
