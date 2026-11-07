@@ -6,7 +6,7 @@ import { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import { 
   ArrowLeft, CheckCircle2, Clock, RotateCw, XCircle, 
-  Receipt, Copy, Check, Store, User, ShieldCheck, AlertCircle, RefreshCw, QrCode
+  Receipt, Copy, Check, Store, User, ShieldCheck, AlertCircle, RefreshCw, QrCode, Download
 } from 'lucide-react';
 
 const LIME = '#d8f53b';
@@ -285,12 +285,53 @@ export default function InvoicePage({ params }) {
               </div>
 
               {/* QR Image Box */}
-              <div className="bg-slate-900 p-4 rounded-3xl inline-block mx-auto mb-4 shadow-xl">
+              <div className="bg-slate-900 p-4 rounded-3xl inline-block mx-auto mb-3 shadow-xl">
                 <img
                   src={invoice.qr_image}
                   alt="Dynamic QRIS"
                   className="w-56 h-56 sm:w-64 sm:h-64 mx-auto rounded-xl object-contain bg-white"
                 />
+              </div>
+
+              {/* Action Buttons: Unduh QR & Salin Link */}
+              <div className="flex items-center justify-center gap-2 max-w-[260px] mx-auto mb-4">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      const res = await fetch(invoice.qr_image);
+                      const blob = await res.blob();
+                      const url = window.URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `QRIS-${id}.png`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      window.URL.revokeObjectURL(url);
+                    } catch {
+                      window.open(invoice.qr_image, '_blank');
+                    }
+                  }}
+                  className="flex-1 py-2 px-3 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs active:scale-95"
+                  title="Unduh QR Code untuk bayar lewat galeri"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  <span>Unduh QR</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(window.location.href);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                  className="flex-1 py-2 px-3 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs active:scale-95"
+                  title="Salin link invoice"
+                >
+                  {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                  <span>{copied ? 'Tersalin!' : 'Salin Link'}</span>
+                </button>
               </div>
 
               {/* Polling Notice */}
