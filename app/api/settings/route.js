@@ -28,6 +28,7 @@ export async function GET() {
         api_key: getSetting('api_key', process.env.API_KEY || 'al-yra7890ia8'),
         webhook_url: getSetting('webhook_url', ''),
         webhook_urls: webhookUrls,
+        shopee_token: getSetting('shopee_token', '') ? '••••••••' : '',
         qr_style: getSetting('qr_style', 'classic'),
         qr_body: getSetting('qr_body', 'square'),
         qr_eye_frame: getSetting('qr_eye_frame', 'square'),
@@ -54,6 +55,9 @@ export async function POST(req) {
     if (body.unique_code_max !== undefined) setSetting('unique_code_max', String(body.unique_code_max));
     if (body.api_key !== undefined && body.api_key.trim()) setSetting('api_key', body.api_key.trim());
     if (body.webhook_url !== undefined) setSetting('webhook_url', body.webhook_url.trim());
+    if (body.shopee_token !== undefined && body.shopee_token.trim() && !body.shopee_token.includes('•••')) {
+      setSetting('shopee_token', body.shopee_token.trim());
+    }
     if (body.webhook_urls !== undefined && Array.isArray(body.webhook_urls)) {
       const sanitized = body.webhook_urls.map(u => String(u || '').trim()).filter(Boolean).slice(0, 5);
       setSetting('webhook_urls', JSON.stringify(sanitized));
