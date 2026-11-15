@@ -5,7 +5,7 @@ export async function POST(req, { params }) {
   try {
     const apiKey = req.headers.get('x-api-key');
     const validKey = getSetting('api_key', process.env.API_KEY || 'al-yra7890ia8');
-    if (apiKey && apiKey !== validKey) {
+    if (!apiKey || apiKey !== validKey) {
       return NextResponse.json({ success: false, code: 401, message: 'Invalid API key' }, { status: 401 });
     }
 
