@@ -28,7 +28,7 @@ export default function DonasiPage() {
   const [checking, setChecking] = useState(false);
   const [paidResult, setPaidResult] = useState(null);
   const [countdown, setCountdown] = useState(900); // 15 mins
-  const [pollingCountdown, setPollingCountdown] = useState(10);
+  const [pollingCountdown, setPollingCountdown] = useState(5);
 
   // Recent donations feed
   const [recentList, setRecentList] = useState([]);
@@ -58,7 +58,7 @@ export default function DonasiPage() {
     return () => clearInterval(interval);
   }, [paymentData, paidResult]);
 
-  // 10s auto-polling
+  // 5s auto-polling
   useEffect(() => {
     if (!paymentData || paidResult) return;
 
@@ -76,7 +76,7 @@ export default function DonasiPage() {
         console.error(err);
       } finally {
         setChecking(false);
-        setPollingCountdown(10);
+        setPollingCountdown(5);
       }
     };
 
@@ -84,13 +84,13 @@ export default function DonasiPage() {
       setPollingCountdown((prev) => {
         if (prev <= 1) {
           checkStatus();
-          return 10;
+          return 5;
         }
         return prev - 1;
       });
-    }, 1000);
+    }, 500);
 
-    return () => clearInterval(ticker);
+    return () => clearInterval(interval);
   }, [paymentData, paidResult]);
 
   const handleCreateDonation = async (e) => {

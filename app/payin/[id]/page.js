@@ -54,7 +54,7 @@ export default function InvoicePage({ params }) {
   const [checking, setChecking] = useState(false);
   const [copied, setCopied] = useState(false);
   const [countdown, setCountdown] = useState(300); // 5 mins
-  const [pollingCountdown, setPollingCountdown] = useState(10);
+  const [pollingCountdown, setPollingCountdown] = useState(5);
 
   const fetchInvoice = async () => {
     try {
@@ -115,7 +115,7 @@ export default function InvoicePage({ params }) {
         console.error(err);
       } finally {
         setChecking(false);
-        setPollingCountdown(10);
+        setPollingCountdown(5);
       }
     };
 
@@ -123,11 +123,11 @@ export default function InvoicePage({ params }) {
       setPollingCountdown((prev) => {
         if (prev <= 1) {
           checkStatus();
-          return 10;
+          return 5;
         }
         return prev - 1;
       });
-    }, 1000);
+    }, 500);
 
     return () => clearInterval(pollInterval);
   }, [invoice, id]);
