@@ -323,9 +323,8 @@ export default function SettingsPage() {
       <Navbar active="settings" onRefresh={fetchSettings} loading={loading} />
 
       <main className="w-full max-w-6xl mx-auto px-4 pb-10 sm:px-6 flex-1 space-y-6">
-        {/* Top Header & Fast Save — sticky, bungkus seluruh kartu agar tombol ikut form */}
-        <form onSubmit={handleSave} className="space-y-6">
-        <div className="sticky top-16 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 bg-[#e9edf2]/90 backdrop-blur-md border-b border-slate-200/70 flex flex-wrap items-center justify-between gap-4">
+        {/* Top Header & Fast Save — ikut tergulung (bukan sticky) */}
+        <div className="-mx-4 sm:-mx-6 px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-sm" style={{ color: LIME }}>
               <Settings className="h-5 w-5" />
@@ -338,6 +337,7 @@ export default function SettingsPage() {
 
           <button
             type="submit"
+            form="settings-form"
             disabled={saving || loading}
             className="inline-flex items-center gap-2 rounded-full bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 text-xs font-bold transition shadow-sm hover:scale-[1.02] disabled:opacity-50"
           >
@@ -375,7 +375,7 @@ export default function SettingsPage() {
             <span>Memuat data konfigurasi...</span>
           </div>
         ) : (
-          <>
+          <form id="settings-form" onSubmit={handleSave} className="space-y-6">
             {/* 2-COLUMN SIDE-BY-SIDE GRID */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
               
@@ -1167,9 +1167,8 @@ export default function SettingsPage() {
                 </div>
               </div>
             </div>
-          </>
+          </form>
         )}
-        </form>
       </main>
 
       <footer className="pb-10 text-center text-xs text-slate-400 md:pb-8">
