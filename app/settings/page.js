@@ -631,140 +631,6 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 </div>
-
-                {/* CARD 5: Autentikasi 2-Faktor (2FA TOTP) */}
-                <div className="rounded-[28px] bg-white p-5 sm:p-6 shadow-sm border border-slate-100 space-y-4">
-                  <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                    <div className="flex items-center gap-2">
-                      <ShieldCheck className="h-4 w-4 text-slate-600" />
-                      <h2 className="font-bold text-sm text-slate-900">2-Factor Authentication (2FA)</h2>
-                    </div>
-                    <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${totpEnabled ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-600'}`}>
-                      {totpEnabled ? 'Aktif' : 'Nonaktif'}
-                    </span>
-                  </div>
-
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    Proteksi ganda dengan kode 6 digit dari aplikasi Google Authenticator atau Authy di smartphone kamu.
-                  </p>
-
-                  {totpSuccess && (
-                    <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
-                      <span>{totpSuccess}</span>
-                    </div>
-                  )}
-
-                  {totpError && (
-                    <div className="p-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-600 text-xs flex items-center gap-2">
-                      <AlertCircle className="h-4 w-4 shrink-0" />
-                      <span>{totpError}</span>
-                    </div>
-                  )}
-
-                  {!totpEnabled ? (
-                    <div>
-                      {!showTotpSetup ? (
-                        <button
-                          type="button"
-                          onClick={() => { setShowTotpSetup(true); fetch2FA(); }}
-                          className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition flex items-center justify-center gap-2 shadow-sm"
-                        >
-                          <Smartphone className="h-4 w-4 text-lime-300" />
-                          <span>Siapkan Google Authenticator</span>
-                        </button>
-                      ) : (
-                        <div className="rounded-2xl bg-slate-50 p-4 border border-slate-200/80 space-y-4">
-                          <div className="text-center space-y-2">
-                            <span className="text-[11px] font-bold text-slate-600 block">
-                              1. Scan QR Code ini di Google Authenticator:
-                            </span>
-                            {totpData?.qr_data_url && (
-                              <div className="inline-block p-2 bg-white rounded-2xl shadow-sm border border-slate-200 mx-auto">
-                                <img
-                                  src={totpData.qr_data_url}
-                                  alt="2FA QR Code"
-                                  className="w-40 h-40 object-contain mx-auto"
-                                />
-                              </div>
-                            )}
-                            <div className="pt-1">
-                              <span className="text-[10px] text-slate-400 block mb-1">Atau masukkan secret key manual:</span>
-                              <code className="px-2.5 py-1 rounded bg-white border border-slate-200 font-mono text-[11px] font-bold text-slate-800 select-all">
-                                {totpData?.secret || 'Memuat...'}
-                              </code>
-                            </div>
-                          </div>
-
-                          <div className="space-y-2 pt-2 border-t border-slate-200/60">
-                            <label className="text-[11px] font-bold text-slate-700 block">
-                              2. Masukkan 6 digit kode dari HP untuk aktifkan:
-                            </label>
-                            <div className="flex items-center gap-2">
-                              <input
-                                type="text"
-                                maxLength={6}
-                                inputMode="numeric"
-                                placeholder="000000"
-                                value={totpCodeInput}
-                                onChange={(e) => setTotpCodeInput(e.target.value.replace(/\D/g, ''))}
-                                className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 font-mono text-center text-base font-bold tracking-widest focus:outline-none focus:border-slate-900"
-                              />
-                              <button
-                                type="button"
-                                disabled={totpLoading || totpCodeInput.length !== 6}
-                                onClick={handleEnable2FA}
-                                className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition disabled:opacity-50 shrink-0"
-                              >
-                                {totpLoading ? 'Verifikasi...' : 'Aktifkan'}
-                              </button>
-                            </div>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={() => { setShowTotpSetup(false); setTotpError(''); }}
-                            className="text-[11px] font-semibold text-slate-500 hover:text-slate-800 transition block text-center w-full"
-                          >
-                            Batal
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="rounded-2xl bg-slate-50 p-4 border border-slate-200/80 space-y-3">
-                      <div className="flex items-center gap-2 text-xs font-semibold text-emerald-800">
-                        <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-                        <span>Akun kamu terlindungi dengan 2FA Authenticator.</span>
-                      </div>
-
-                      <div className="pt-2 border-t border-slate-200/60 space-y-2">
-                        <label className="text-[11px] font-bold text-slate-700 block">
-                          Ingin menonaktifkan? Masukkan 6 digit kode dari HP:
-                        </label>
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="text"
-                            maxLength={6}
-                            inputMode="numeric"
-                            placeholder="000000"
-                            value={totpCodeInput}
-                            onChange={(e) => setTotpCodeInput(e.target.value.replace(/\D/g, ''))}
-                            className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 font-mono text-center text-sm font-bold tracking-widest focus:outline-none focus:border-slate-900"
-                          />
-                          <button
-                            type="button"
-                            disabled={totpLoading || totpCodeInput.length !== 6}
-                            onClick={handleDisable2FA}
-                            className="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition disabled:opacity-50 shrink-0"
-                          >
-                            {totpLoading ? 'Proses...' : 'Nonaktifkan'}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
               </div>
 
               {/* KOLOM KANAN (7 cols): Desain & Live Preview QRIS */}
@@ -1164,6 +1030,140 @@ export default function SettingsPage() {
                       </div>
                     </div>
                   </div>
+                </div>
+
+                {/* CARD 6: Autentikasi 2-Faktor (2FA TOTP) — desktop: kolom kanan, bawah QRIS */}
+                <div className="rounded-[28px] bg-white p-5 sm:p-6 shadow-sm border border-slate-100 space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck className="h-4 w-4 text-slate-600" />
+                      <h2 className="font-bold text-sm text-slate-900">2-Factor Authentication (2FA)</h2>
+                    </div>
+                    <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${totpEnabled ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-600'}`}>
+                      {totpEnabled ? 'Aktif' : 'Nonaktif'}
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Proteksi ganda dengan kode 6 digit dari aplikasi Google Authenticator atau Authy di smartphone kamu.
+                  </p>
+
+                  {totpSuccess && (
+                    <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+                      <span>{totpSuccess}</span>
+                    </div>
+                  )}
+
+                  {totpError && (
+                    <div className="p-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-600 text-xs flex items-center gap-2">
+                      <AlertCircle className="h-4 w-4 shrink-0" />
+                      <span>{totpError}</span>
+                    </div>
+                  )}
+
+                  {!totpEnabled ? (
+                    <div>
+                      {!showTotpSetup ? (
+                        <button
+                          type="button"
+                          onClick={() => { setShowTotpSetup(true); fetch2FA(); }}
+                          className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition flex items-center justify-center gap-2 shadow-sm"
+                        >
+                          <Smartphone className="h-4 w-4 text-lime-300" />
+                          <span>Siapkan Google Authenticator</span>
+                        </button>
+                      ) : (
+                        <div className="rounded-2xl bg-slate-50 p-4 border border-slate-200/80 space-y-4">
+                          <div className="text-center space-y-2">
+                            <span className="text-[11px] font-bold text-slate-600 block">
+                              1. Scan QR Code ini di Google Authenticator:
+                            </span>
+                            {totpData?.qr_data_url && (
+                              <div className="inline-block p-2 bg-white rounded-2xl shadow-sm border border-slate-200 mx-auto">
+                                <img
+                                  src={totpData.qr_data_url}
+                                  alt="2FA QR Code"
+                                  className="w-40 h-40 object-contain mx-auto"
+                                />
+                              </div>
+                            )}
+                            <div className="pt-1">
+                              <span className="text-[10px] text-slate-400 block mb-1">Atau masukkan secret key manual:</span>
+                              <code className="px-2.5 py-1 rounded bg-white border border-slate-200 font-mono text-[11px] font-bold text-slate-800 select-all">
+                                {totpData?.secret || 'Memuat...'}
+                              </code>
+                            </div>
+                          </div>
+
+                          <div className="space-y-2 pt-2 border-t border-slate-200/60">
+                            <label className="text-[11px] font-bold text-slate-700 block">
+                              2. Masukkan 6 digit kode dari HP untuk aktifkan:
+                            </label>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="text"
+                                maxLength={6}
+                                inputMode="numeric"
+                                placeholder="000000"
+                                value={totpCodeInput}
+                                onChange={(e) => setTotpCodeInput(e.target.value.replace(/\D/g, ''))}
+                                className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 font-mono text-center text-base font-bold tracking-widest focus:outline-none focus:border-slate-900"
+                              />
+                              <button
+                                type="button"
+                                disabled={totpLoading || totpCodeInput.length !== 6}
+                                onClick={handleEnable2FA}
+                                className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition disabled:opacity-50 shrink-0"
+                              >
+                                {totpLoading ? 'Verifikasi...' : 'Aktifkan'}
+                              </button>
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => { setShowTotpSetup(false); setTotpError(''); }}
+                            className="text-[11px] font-semibold text-slate-500 hover:text-slate-800 transition block text-center w-full"
+                          >
+                            Batal
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="rounded-2xl bg-slate-50 p-4 border border-slate-200/80 space-y-3">
+                      <div className="flex items-center gap-2 text-xs font-semibold text-emerald-800">
+                        <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                        <span>Akun kamu terlindungi dengan 2FA Authenticator.</span>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-200/60 space-y-2">
+                        <label className="text-[11px] font-bold text-slate-700 block">
+                          Ingin menonaktifkan? Masukkan 6 digit kode dari HP:
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            maxLength={6}
+                            inputMode="numeric"
+                            placeholder="000000"
+                            value={totpCodeInput}
+                            onChange={(e) => setTotpCodeInput(e.target.value.replace(/\D/g, ''))}
+                            className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 font-mono text-center text-sm font-bold tracking-widest focus:outline-none focus:border-slate-900"
+                          />
+                          <button
+                            type="button"
+                            disabled={totpLoading || totpCodeInput.length !== 6}
+                            onClick={handleDisable2FA}
+                            className="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition disabled:opacity-50 shrink-0"
+                          >
+                            {totpLoading ? 'Proses...' : 'Nonaktifkan'}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
