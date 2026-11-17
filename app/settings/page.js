@@ -322,9 +322,10 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-[#e9edf2] text-slate-900 flex flex-col justify-between">
       <Navbar active="settings" onRefresh={fetchSettings} loading={loading} />
 
-      <main className="w-full max-w-6xl mx-auto px-4 pb-28 sm:px-6 flex-1 space-y-6">
-        {/* Top Header & Fast Save */}
-        <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
+      <main className="w-full max-w-6xl mx-auto px-4 pb-10 sm:px-6 flex-1 space-y-6">
+        {/* Top Header & Fast Save — sticky, bungkus seluruh kartu agar tombol ikut form */}
+        <form onSubmit={handleSave} className="space-y-6">
+        <div className="sticky top-16 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 bg-[#e9edf2]/90 backdrop-blur-md border-b border-slate-200/70 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-sm" style={{ color: LIME }}>
               <Settings className="h-5 w-5" />
@@ -336,7 +337,7 @@ export default function SettingsPage() {
           </div>
 
           <button
-            onClick={handleSave}
+            type="submit"
             disabled={saving || loading}
             className="inline-flex items-center gap-2 rounded-full bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 text-xs font-bold transition shadow-sm hover:scale-[1.02] disabled:opacity-50"
           >
@@ -374,7 +375,7 @@ export default function SettingsPage() {
             <span>Memuat data konfigurasi...</span>
           </div>
         ) : (
-          <form onSubmit={handleSave} className="space-y-6">
+          <>
             {/* 2-COLUMN SIDE-BY-SIDE GRID */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
               
@@ -1166,32 +1167,12 @@ export default function SettingsPage() {
                 </div>
               </div>
             </div>
-
-            {/* Bottom Floating/Bar Save Button */}
-            <div className="flex justify-end pt-2">
-              <button
-                type="submit"
-                disabled={saving || loading}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-slate-900 hover:bg-slate-800 text-white px-8 py-3 text-sm font-bold transition shadow-md hover:scale-[1.01] disabled:opacity-50"
-              >
-                {saving ? (
-                  <>
-                    <RotateCw className="h-4 w-4 animate-spin" style={{ color: LIME }} />
-                    <span>Menyimpan Pengaturan...</span>
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-4 w-4" style={{ color: LIME }} />
-                    <span>Simpan Semua Pengaturan</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
+          </>
         )}
+        </form>
       </main>
 
-      <footer className="pb-28 text-center text-xs text-slate-400 md:pb-8">
+      <footer className="pb-10 text-center text-xs text-slate-400 md:pb-8">
         Alpay &copy; 2026 • Settings Module
       </footer>
     </div>
