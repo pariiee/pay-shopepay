@@ -12,10 +12,17 @@ export async function GET() {
 
   try {
     const db = getDb();
+    // Join ke transaksi lewat payload JSON -> satu baris log tahu transaksi mana
+    // yang memicunya dan URL tujuan apa yang benar-benar dipakai transaksi itu.
     const rows = db.prepare(`
-      SELECT id, event, url, payload, response_code, response_body, latency_ms, attempts, created_at
-      FROM webhook_logs
-      ORDER BY created_at DESC, id DESC
+      SELECT w.id, w.event, w.url, w.payload, w.response_code, w.response_body,
+             w.latency_ms, w.attempts, w.created_at,
+             d.id AS donation_id, d.donor_name, d.message AS donation_message,
+             d.amount AS donation_amount, d.status AS donation_status,
+             d.issuer, d.callback_url
+      FROM webhook_logs w
+      LEFT JOIN donations d ON d.id = json_extract(w.payload, '$.data.id')
+      ORDER BY w.created_at DESC, w.id DESC
       LIMIT 50
     `).all();
 

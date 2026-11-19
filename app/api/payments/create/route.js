@@ -103,8 +103,8 @@ export async function POST(req) {
     const paymentId = crypto.randomBytes(4).toString('hex');
 
     db.prepare(`
-      INSERT INTO donations (id, donor_name, message, base_amount, fee, unique_code, amount, qris_string, status, created_at, expires_at, callback_url)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?)
+      INSERT INTO donations (id, donor_name, message, base_amount, fee, unique_code, amount, qris_string, status, created_at, expires_at, callback_url, origin)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, 'payment')
     `).run(paymentId, customerName, note, rawAmount, fee, uniqueCode, finalAmount, dynamicQR, now, expiresAt, callbackUrl);
 
     const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || 'pay.ghifari.biz.id';

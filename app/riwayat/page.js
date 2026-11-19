@@ -121,6 +121,8 @@ export default function RiwayatPage() {
     return (
       l.url?.toLowerCase().includes(q) ||
       l.event?.toLowerCase().includes(q) ||
+      l.donation_id?.toLowerCase().includes(q) ||
+      l.donor_name?.toLowerCase().includes(q) ||
       String(l.response_code).includes(q)
     );
   });
@@ -313,6 +315,7 @@ export default function RiwayatPage() {
                   <thead className="bg-slate-50 text-xs text-slate-500 border-b border-slate-100">
                     <tr>
                       <th className="px-5 py-3 font-semibold">Event</th>
+                      <th className="px-5 py-3 font-semibold">Transaksi</th>
                       <th className="px-5 py-3 font-semibold">Target URL</th>
                       <th className="px-5 py-3 text-center font-semibold">Status</th>
                       <th className="px-5 py-3 text-right font-semibold">Latency</th>
@@ -323,7 +326,7 @@ export default function RiwayatPage() {
                   <tbody className="divide-y divide-slate-100">
                     {filteredLogs.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="py-12 text-center text-xs text-slate-400">
+                        <td colSpan={7} className="py-12 text-center text-xs text-slate-400">
                           Tidak ada log webhook yang tercatat.
                         </td>
                       </tr>
@@ -336,6 +339,19 @@ export default function RiwayatPage() {
                               <span className="font-mono text-xs font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded">
                                 {l.event}
                               </span>
+                            </td>
+                            <td className="px-5 py-3.5">
+                              {l.donation_id ? (
+                                <div className="space-y-0.5">
+                                  <div className="font-mono text-xs font-semibold text-slate-900">{l.donation_id}</div>
+                                  <div className="text-[11px] text-slate-500 truncate max-w-[180px]" title={l.donation_message || ''}>
+                                    {l.donor_name || '-'}
+                                    {l.donation_amount ? ` · Rp ${new Intl.NumberFormat('id-ID').format(l.donation_amount)}` : ''}
+                                  </div>
+                                </div>
+                              ) : (
+                                <span className="text-xs text-slate-400">—</span>
+                              )}
                             </td>
                             <td className="px-5 py-3.5 font-mono text-xs text-slate-600 max-w-xs truncate" title={l.url}>
                               {l.url}
@@ -492,6 +508,34 @@ export default function RiwayatPage() {
               </div>
 
               <div className="space-y-3 text-xs">
+                {selectedLog.donation_id && (
+                  <div>
+                    <span className="font-semibold text-slate-400 block mb-1">Transaksi</span>
+                    <div className="rounded-xl bg-slate-50 p-2.5 border border-slate-200 space-y-1">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="font-mono font-bold text-slate-900">{selectedLog.donation_id}</span>
+                        <span className="font-mono text-[11px] text-slate-500">
+                          {selectedLog.donation_status}
+                        </span>
+                      </div>
+                      <div className="text-slate-600">
+                        {selectedLog.donor_name || '-'}
+                        {selectedLog.donation_amount ? ` · Rp ${new Intl.NumberFormat('id-ID').format(selectedLog.donation_amount)}` : ''}
+                        {selectedLog.issuer ? ` · ${selectedLog.issuer}` : ''}
+                      </div>
+                      {selectedLog.donation_message && (
+                        <div className="text-[11px] text-slate-500 break-words">{selectedLog.donation_message}</div>
+                      )}
+                      <div className="text-[11px] text-slate-500">
+                        Tujuan webhook transaksi ini:{' '}
+                        <span className="font-mono text-slate-700">
+                          {selectedLog.callback_url || '(tanpa callback_url)'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div>
                   <span className="font-semibold text-slate-400 block mb-1">Target URL</span>
                   <div className="rounded-xl bg-slate-50 p-2.5 font-mono text-slate-800 break-all border border-slate-200">
