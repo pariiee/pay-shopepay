@@ -4,6 +4,7 @@ import QRCode from 'qrcode';
 import { getDb, getSetting } from '@/lib/db';
 import { generateDynamicQRIS } from '@/lib/shopee';
 import { generateStyledQrSvg } from '@/lib/qr-generator';
+import { validateCallbackUrl } from '@/lib/webhook';
 
 export async function POST(req) {
   try {
@@ -20,6 +21,12 @@ export async function POST(req) {
     const customerName = (body.customer_name || body.donor_name || 'Pelanggan').trim().slice(0, 50);
     const note = (body.note || body.message || '').trim().slice(0, 200);
     const validMinutes = parseInt(body.valid_minutes, 10) || 5; // Default 5 minutes
+
+    const callbackCheck = validateCallbackUrl(body.callback_url);
+    if (callbackCheck.error) {
+      return NextResponse.json({ success: false, error: callbackCheck.error }, { status: 400 });
+    }
+    const callbackUrl = callbackCheck.url;
 
     if (isNaN(rawAmount) || rawAmount < 100) {
       return NextResponse.json(
@@ -96,9 +103,9 @@ export async function POST(req) {
     const paymentId = crypto.randomBytes(4).toString('hex');
 
     db.prepare(`
-      INSERT INTO donations (id, donor_name, message, base_amount, fee, unique_code, amount, qris_string, status, created_at, expires_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)
-    `).run(paymentId, customerName, note, rawAmount, fee, uniqueCode, finalAmount, dynamicQR, now, expiresAt);
+      INSERT INTO donations (id, donor_name, message, base_amount, fee, unique_code, amount, qris_string, status, created_at, expires_at, callback_url)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?)
+    `).run(paymentId, customerName, note, rawAmount, fee, uniqueCode, finalAmount, dynamicQR, now, expiresAt, callbackUrl);
 
     const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || 'pay.ghifari.biz.id';
     const proto = req.headers.get('x-forwarded-proto') || (host.includes('localhost') ? 'http' : 'https');
