@@ -59,6 +59,8 @@ paths:
           '{$request.body#/callback_url}':
             post:
               summary: payment.paid
+              parameters:
+                - $ref: '#/components/parameters/WebhookSignature'
               description: >-
                 Dikirim sekali saat pembayaran terkonfirmasi. Hanya dikirim
                 kalau transaksi punya callback_url.
@@ -75,6 +77,8 @@ paths:
           '{$request.body#/callback_url}':
             post:
               summary: payment.expired
+              parameters:
+                - $ref: '#/components/parameters/WebhookSignature'
               description: >-
                 Dikirim sekali saat transaksi melewati expires_at tanpa dibayar.
               requestBody:
@@ -144,6 +148,18 @@ components:
       type: apiKey
       in: header
       name: X-API-Key
+
+  parameters:
+    WebhookSignature:
+      name: X-Webhook-Signature
+      in: header
+      required: true
+      description: >-
+        HMAC-SHA256 hex dari raw body webhook, key = API key Alpay. Hitung ulang
+        dan bandingkan sebelum memproses payload.
+      schema:
+        type: string
+        example: 9f2c4e1a7b3d8e6f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f
 
   schemas:
     WebhookPaid:
