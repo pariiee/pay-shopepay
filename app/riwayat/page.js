@@ -282,7 +282,7 @@ export default function RiwayatPage() {
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <input
                   type="text"
-                  placeholder="Cari URL, status code, event..."
+                  placeholder="Cari URL, transaksi, nama, status code, event..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 rounded-full bg-white border border-slate-200 text-xs focus:outline-none focus:border-slate-900 shadow-sm transition"
