@@ -45,6 +45,47 @@ paths:
                   type: integer
                   description: Masa berlaku invoice dalam menit
                   example: 5
+                callback_url:
+                  type: string
+                  format: uri
+                  description: >-
+                    URL https tujuan notifikasi untuk transaksi ini. Harus sama
+                    persis dengan salah satu URL di daftar Webhook URL
+                    (Pengaturan). Kalau dikosongkan, transaksi tidak mengirim
+                    webhook ke mana pun.
+                  example: https://merchant.example.com/api/payment/webhook
+      callbacks:
+        paymentPaid:
+          '{$request.body#/callback_url}':
+            post:
+              summary: payment.paid
+              description: >-
+                Dikirim sekali saat pembayaran terkonfirmasi. Hanya dikirim
+                kalau transaksi punya callback_url.
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/WebhookPaid'
+              responses:
+                '2XX':
+                  description: Diterima merchant. Respons non-2XX dicoba ulang maksimal 3 kali.
+        paymentExpired:
+          '{$request.body#/callback_url}':
+            post:
+              summary: payment.expired
+              description: >-
+                Dikirim sekali saat transaksi melewati expires_at tanpa dibayar.
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/WebhookExpired'
+              responses:
+                '2XX':
+                  description: Diterima merchant. Respons non-2XX dicoba ulang maksimal 3 kali.
       responses:
         '200':
           description: Payment created — returns id, payment_url, qr_image, expires_at
@@ -103,6 +144,65 @@ components:
       type: apiKey
       in: header
       name: X-API-Key
+
+  schemas:
+    WebhookPaid:
+      type: object
+      required: [event, timestamp, data]
+      properties:
+        event:
+          type: string
+          enum: [payment.paid]
+        timestamp:
+          type: string
+          format: date-time
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+              description: ID transaksi
+            amount:
+              type: integer
+              description: Nominal yang dibayar (termasuk fee & kode unik)
+            base_amount:
+              type: integer
+            fee:
+              type: integer
+            unique_code:
+              type: integer
+            customer_name:
+              type: string
+            message:
+              type: string
+            issuer:
+              type: string
+              description: Penerbit pembayaran, mis. Seabank
+            transaction_id:
+              type: string
+            paid_at:
+              type: integer
+              description: Epoch detik
+
+    WebhookExpired:
+      type: object
+      required: [event, timestamp, data]
+      properties:
+        event:
+          type: string
+          enum: [payment.expired]
+        timestamp:
+          type: string
+          format: date-time
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+            amount:
+              type: integer
+            customer_name:
+              type: string
 `;
 
 export async function GET() {
