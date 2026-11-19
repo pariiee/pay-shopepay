@@ -239,7 +239,7 @@ export default function DocsPage() {
   }, []);
   const [openEndpoint, setOpenEndpoint] = useState(null);
   const [copied, setCopied] = useState(null);
-  const [apiKey, setApiKey] = useState('al-ez7dpzxdh6');
+  const [apiKey, setApiKey] = useState('');
 
   // Interactive Try It Out state for Endpoint 1: Create
   const [createAmount, setCreateAmount] = useState('25000');
@@ -266,12 +266,8 @@ export default function DocsPage() {
   const [webhookLang, setWebhookLang] = useState('python');
 
   useEffect(() => {
-    fetch('/api/settings/active-key')
-      .then(res => res.json())
-      .then(data => {
-        if (data?.success && data.api_key) setApiKey(data.api_key);
-      })
-      .catch(() => {});
+    const saved = sessionStorage.getItem('docs_api_key');
+    if (saved) setApiKey(saved);
   }, []);
 
   const copyCode = async (id, code) => {
@@ -397,6 +393,29 @@ export default function DocsPage() {
               <span>Download .yaml</span>
             </a>
           </div>
+        </div>
+
+        {/* API Key input — key tidak pernah dikirim server ke publik */}
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 shadow-sm space-y-3">
+          <div>
+            <h2 className="text-sm font-bold text-amber-900 flex items-center gap-2">
+              <KeyRound className="h-4 w-4" /> API Key untuk Try It Out
+            </h2>
+            <p className="text-xs text-amber-700 mt-0.5">
+              Tempel API Key Anda di sini. Hanya disimpan di tab ini (sessionStorage), tidak dikirim ke server.
+            </p>
+          </div>
+          <input
+            type="password"
+            value={apiKey}
+            onChange={(e) => {
+              setApiKey(e.target.value);
+              sessionStorage.setItem('docs_api_key', e.target.value);
+            }}
+            placeholder="al-xxxxxxxxxx"
+            autoComplete="off"
+            className="w-full max-w-sm px-3 py-2 rounded-xl bg-white border border-amber-200 text-slate-900 font-mono text-xs focus:outline-none focus:border-amber-500"
+          />
         </div>
 
         {/* Payments Category Header */}
@@ -531,7 +550,7 @@ export default function DocsPage() {
                   </span>
                   <div className="flex items-center gap-2 text-xs">
                     <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="font-mono text-slate-600">{apiKey.slice(0, 8)}..</span>
+                    <span className="font-mono text-slate-600">{apiKey ? '••••••••' : 'belum diisi'}</span>
                   </div>
                 </div>
 
@@ -871,7 +890,7 @@ export default function DocsPage() {
                   </span>
                   <div className="flex items-center gap-2 text-xs">
                     <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="font-mono text-slate-600">{apiKey.slice(0, 8)}..</span>
+                    <span className="font-mono text-slate-600">{apiKey ? '••••••••' : 'belum diisi'}</span>
                   </div>
                 </div>
 
@@ -1057,7 +1076,7 @@ app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
 const express = require('express');
 const app = express();
 
-const SECRET = 'YOUR_API_KEY'; // Kunci API Anda (misal: ${apiKey})
+const SECRET = 'YOUR_API_KEY'; // Kunci API Anda
 
 // Gunakan express.raw agar body tidak terubah sebelum verifikasi hash
 app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
@@ -1110,7 +1129,7 @@ echo json_encode(['success' => true]);`)}
 // Ambil raw payload mentah langsung dari input stream
 $rawBody = file_get_contents('php://input');
 $signature = $_SERVER['HTTP_X_WEBHOOK_SIGNATURE'] ?? '';
-$secret = 'YOUR_API_KEY'; // Kunci API Anda (misal: ${apiKey})
+$secret = 'YOUR_API_KEY'; // Kunci API Anda
 
 $expected = hash_hmac('sha256', $rawBody, $secret);
 
@@ -1165,7 +1184,7 @@ import hashlib
 from flask import Flask, request, jsonify
 
 app = Flask(__name__)
-SECRET = b'YOUR_API_KEY'  # Kunci API Anda (misal: b'${apiKey}')
+SECRET = b'YOUR_API_KEY'  # Kunci API Anda
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
