@@ -60,9 +60,6 @@ export async function POST(req) {
     const donationId = crypto.randomBytes(4).toString('hex');
     const expiresAt = now + 300; // 5 minutes
 
-    // Donasi publik TIDAK punya merchant tujuan: callback_url sengaja dibiarkan NULL
-    // dan tidak ada dispatchWebhook di alur ini. Status 'paid' hanya ditulis ke DB,
-    // jadi tidak ada baris webhook_logs yang dibuat untuk donasi publik.
     db.prepare(`
       INSERT INTO donations (id, donor_name, message, base_amount, unique_code, amount, qris_string, status, created_at, expires_at, origin)
       VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, 'donate')

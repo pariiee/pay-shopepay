@@ -12,8 +12,6 @@ export async function GET() {
 
   try {
     const db = getDb();
-    // Join ke transaksi lewat payload JSON -> satu baris log tahu transaksi mana
-    // yang memicunya dan URL tujuan apa yang benar-benar dipakai transaksi itu.
     const rows = db.prepare(`
       SELECT w.id, w.event, w.url, w.payload, w.response_code, w.response_body,
              w.latency_ms, w.attempts, w.created_at,
